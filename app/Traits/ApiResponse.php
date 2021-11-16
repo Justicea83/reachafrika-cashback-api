@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Response;
 trait ApiResponse {
     public function successResponse($data,$code = Response::HTTP_OK): JsonResponse
     {
-        return response()->json(['data'=>$data],$code);
+        return response()->json($data,$code);
     }
     public function errorResponse($message,$code = Response::HTTP_BAD_REQUEST): JsonResponse
     {

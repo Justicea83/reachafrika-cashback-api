@@ -18,6 +18,7 @@ class StarterSeeder extends Seeder
      */
     public function run()
     {
+
         if(User::query()->count() <= 1){
             /** @var MerchantCategory $defaultCategory */
             $defaultCategory = MerchantCategory::query()->create([

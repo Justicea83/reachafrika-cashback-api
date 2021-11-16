@@ -21,7 +21,7 @@ class CreateCashbacksTable extends Migration
             $table->decimal('start')->nullable();
             $table->decimal('end')->nullable();
             $table->decimal('bonus_percentage')->nullable();
-            $table->boolean('is_fixed')->nullable();
+            $table->boolean('is_fixed');
             $table->decimal('fixed_bonus')->nullable();
             $table->foreignId('merchant_id')->constrained();
             $table->foreignId('branch_id')->constrained();

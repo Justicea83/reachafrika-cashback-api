@@ -6,7 +6,7 @@ use App\Models\Settings\Cashback;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
-class CreateCashbackRequest extends FormRequest
+class UpdateCashbackRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -43,10 +43,13 @@ class CreateCashbackRequest extends FormRequest
      */
     public function withValidator(Validator $validator)
     {
-        $validator->after(function (Validator $validator) {
+        $id = $this->route('id');
+
+        $validator->after(function (Validator $validator) use ($id) {
             if ($this->request->get('is_fixed')) {
                 if (
                     Cashback::query()->where('merchant_id', request()->user()->merchant_id)
+                        ->where('id', '<>', $id)
                         ->where('branch_id', $this->request->get('branch_id'))
                         ->where('fixed_bonus', $this->request->get('fixed_bonus'))
                         ->count() > 0
@@ -55,6 +58,7 @@ class CreateCashbackRequest extends FormRequest
             } else {
                 $cashbacks = Cashback::query()->where('merchant_id', request()->user()->merchant_id)
                     ->where('branch_id', $this->request->get('branch_id'))
+                    ->where('id', '<>', $id)
                     ->where('is_fixed',false)
                     ->whereNotNull(['start','end'])
                     ->select(['id','start','end'])

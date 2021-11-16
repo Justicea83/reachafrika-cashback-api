@@ -21,5 +21,11 @@ Route::prefix('v1/settings')
         //cashbacks
         Route::prefix('cashbacks')->group(function (){
             Route::post('',[CashbacksController::class,'createCashback']);
+            Route::get('',[CashbacksController::class,'getCashbacks']);
+            Route::get('trashed',[CashbacksController::class,'getTrashedCashbacks']);
+            Route::get('{id}/untrash',[CashbacksController::class,'undeleteCashback']);
+            Route::get('{id}',[CashbacksController::class,'getCashback']);
+            Route::put('{id}',[CashbacksController::class,'updateCashback']);
+            Route::delete('{id}',[CashbacksController::class,'deleteCashback']);
         });
     });

@@ -3,11 +3,15 @@
 namespace App\Models\Merchant;
 
 use App\Traits\UnixTimestampsFormat;
+use Database\Factories\BranchFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property mixed id
+ */
 class Branch extends Model
 {
     use HasFactory,SoftDeletes,UnixTimestampsFormat;
@@ -18,6 +22,11 @@ class Branch extends Model
 
     public function merchant(): BelongsTo
     {
-        return $this->belongsTo(Merchant::class);
+        return $this->belongsTo(Merchant::class,'merchant_id');
+    }
+
+    protected static function newFactory(): BranchFactory
+    {
+        return BranchFactory::new();
     }
 }

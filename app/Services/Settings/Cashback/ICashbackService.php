@@ -2,6 +2,7 @@
 
 namespace App\Services\Settings\Cashback;
 
+use App\Models\Settings\Cashback;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -13,11 +14,13 @@ interface ICashbackService
 
     public function getDeletedCashbacks(User $user): Collection;
 
-    public function getCashback(User $user,int $id): array;
+    public function getCashback(User $user, int $id): ?Model;
 
-    public function deleteCashback(User $user,int $id);
+    public function deleteCashback(User $user, int $id);
 
-    public function unDeleteCashback(User $user, int $id): array;
+    public function unDeleteCashback(User $user, int $id): Model;
 
-    public function createCashback(User $user,array $payload): array;
+    public function createCashback(User $user, array $payload): Model;
+
+    public function updateCashback(User $user, int $id, array $payload);
 }

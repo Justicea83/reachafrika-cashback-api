@@ -2,9 +2,11 @@
 
 namespace App\Models\Merchant;
 
+use App\Models\Category\MerchantCategory;
 use App\Models\User;
 use App\Traits\UnixTimestampsFormat;
 use ArrayAccess;
+use Database\Factories\MerchantFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -30,6 +32,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Merchant extends Model
 {
     use HasFactory,SoftDeletes,UnixTimestampsFormat;
+
     protected $guarded = ['id','created_at','deleted_at','updated_at'];
     protected $hidden = ['deleted_at','created_by','last_updated_by','last_deleted_by'];
 
@@ -50,5 +53,15 @@ class Merchant extends Model
     public function branches(): HasMany
     {
         return $this->hasMany(Branch::class);
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(MerchantCategory::class,'category_id');
+    }
+
+    protected static function newFactory(): MerchantFactory
+    {
+        return MerchantFactory::new();
     }
 }

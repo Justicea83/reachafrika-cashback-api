@@ -3,6 +3,7 @@
 namespace App\Models\Category;
 
 use App\Traits\UnixTimestampsFormat;
+use Database\Factories\MerchantCategoryFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -22,5 +23,10 @@ class MerchantCategory extends Category
     public function children(): HasMany
     {
         return $this->hasMany($this, 'parent_id');
+    }
+
+    protected static function newFactory(): MerchantCategoryFactory
+    {
+        return MerchantCategoryFactory::new();
     }
 }

@@ -30,7 +30,7 @@ class MerchantFactory extends Factory
             'code' => $this->faker->randomDigitNotNull(),
             'website' => $this->faker->url,
             'primary_email_verified_at' => now()->toDateTimeString(),
-            'category_id' => MerchantCategory::factory()->create()
+            'category_id' => MerchantCategory::factory(),
         ];
     }
 }

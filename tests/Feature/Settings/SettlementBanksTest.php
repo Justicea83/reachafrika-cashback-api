@@ -54,11 +54,11 @@ class SettlementBanksTest extends TestCase
                 'account_name' => 'Test Account'
             ]
         );
-        $response->assertJson(['data' => [
+        $response->assertJson([
             'bank_name' => 'Access bank',
             'account_no' => '525324579345',
             'account_name' => 'Test Account'
-        ]])->assertStatus(Response::HTTP_CREATED);
+        ])->assertStatus(Response::HTTP_CREATED);
     }
 
     function testGetSettlementBank()
@@ -73,11 +73,9 @@ class SettlementBanksTest extends TestCase
         );
         $this->actingAs($user, 'api')->getJson('/api/v1/settings/settlement-banks')->assertJson(
             [
-                'data' => [
-                    'bank_name' => 'Access bank',
-                    'account_no' => '525324579345',
-                    'account_name' => 'Test Account'
-                ]
+                'bank_name' => 'Access bank',
+                'account_no' => '525324579345',
+                'account_name' => 'Test Account'
             ]
         )->assertStatus(Response::HTTP_OK);
     }
