@@ -15,9 +15,9 @@ interface IMerchantService
 
     public function createMerchantBranch(User $user, Merchant $merchant, array $payload): Model;
 
-    public function createMerchantBranchByMerchantId(User $user, int $merchantId, array $payload): Model;
+    public function createMerchantBranchByMerchantId(User $user, array $payload): Model;
 
-    public function createMerchantUserByMerchantId(User $user, int $merchantId, array $payload): Model;
+    public function createMerchantUserByMerchantId(User $user,  array $payload): Model;
 
     public function getMerchants(): LengthAwarePaginator;
 
@@ -27,16 +27,22 @@ interface IMerchantService
 
     public function updateMerchant(User $user, array $payload, int $id);
 
-    public function getMerchantBranches(int $id): LengthAwarePaginator;
+    public function getMerchantBranches(User $user): LengthAwarePaginator;
 
-    public function getMerchantUsers(int $id): LengthAwarePaginator;
+    public function getMerchantUsers(User $user): LengthAwarePaginator;
 
-    public function deleteMerchant(int $id);
+    public function deleteMerchant(User $user);
 
-    public function markAsActive(int $id);
+    public function markAsActive(User $user);
 
-    public function markAsBlocked(int $id);
+    public function markAsBlocked(User $user);
 
-    public function markAsPending(int $id);
+    public function markAsPending(User $user);
+
+    public function deleteBranch(User $user, $branchId);
+
+    public function changeBranchStatus(User $user,int $branchId, string $status);
+
+
 
 }

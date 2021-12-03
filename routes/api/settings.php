@@ -28,4 +28,9 @@ Route::prefix('v1/settings')
             Route::put('{id}',[CashbacksController::class,'updateCashback']);
             Route::delete('{id}',[CashbacksController::class,'deleteCashback']);
         });
+
+        //account settings
+        Route::prefix('account-settings')->group(function (){
+            Route::post('change-password',[SettingsController::class,'changePassword']);
+        });
     });

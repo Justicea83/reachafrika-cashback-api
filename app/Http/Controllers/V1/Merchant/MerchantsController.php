@@ -47,49 +47,60 @@ class MerchantsController extends Controller
         return $this->noContent();
     }
 
-    public function getMerchantBranches(int $id): JsonResponse
+    public function getMerchantBranches(): JsonResponse
     {
-        return $this->successResponse($this->merchantService->getMerchantBranches($id));
+        return $this->successResponse($this->merchantService->getMerchantBranches(request()->user()));
     }
 
-    public function getMerchantUsers(int $id): JsonResponse
+    public function getMerchantUsers(): JsonResponse
     {
-        return $this->successResponse($this->merchantService->getMerchantUsers($id));
+        return $this->successResponse($this->merchantService->getMerchantUsers(request()->user()));
     }
 
-    public function createMerchantBranch(CreateMerchantBranchRequest $request, int $id): JsonResponse
+    public function createMerchantBranch(CreateMerchantBranchRequest $request): JsonResponse
     {
-        return $this->successResponse($this->merchantService->createMerchantBranchByMerchantId($request->user(), $id, $request->all()));
+        return $this->successResponse($this->merchantService->createMerchantBranchByMerchantId($request->user(),  $request->all()));
     }
 
-    public function createMerchantUser(CreateUserRequest $request, int $id): JsonResponse
+    public function createMerchantUser(CreateUserRequest $request): JsonResponse
     {
-        return $this->successResponse($this->merchantService->createMerchantUserByMerchantId($request->user(), $id, $request->all()));
+        return $this->successResponse($this->merchantService->createMerchantUserByMerchantId($request->user(), $request->all()));
     }
 
-    public function markAsBlocked(int $id): Response
+    public function markAsBlocked(): Response
     {
-        $this->merchantService->markAsBlocked($id);
+        $this->merchantService->markAsBlocked(request()->user());
         return $this->noContent();
     }
 
-    public function markAsActive(int $id): Response
+    public function markAsActive(): Response
     {
-        $this->merchantService->markAsActive($id);
+        $this->merchantService->markAsActive(request()->user());
         return $this->noContent();
     }
 
-    public function markAsPending(int $id): Response
+    public function markAsPending(): Response
     {
-        $this->merchantService->markAsPending($id);
+        $this->merchantService->markAsPending(request()->user());
         return $this->noContent();
     }
 
-    public function deleteMerchant(int $id): Response
+    public function deleteMerchant(): Response
     {
-        $this->merchantService->deleteMerchant($id);
+        $this->merchantService->deleteMerchant(request()->user());
         return $this->noContent();
     }
 
+    public function deleteBranch(int $branchId): Response
+    {
+        $this->merchantService->deleteBranch(request()->user(),$branchId);
+        return $this->noContent();
+    }
+
+    public function changeBranchStatus(int $branchId, string $status): Response
+    {
+        $this->merchantService->changeBranchStatus(request()->user(),$branchId,$status);
+        return $this->noContent();
+    }
 
 }

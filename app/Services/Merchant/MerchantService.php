@@ -21,7 +21,7 @@ class MerchantService implements IMerchantService
     function __construct(
         IUserManagementService $userManagementService,
         Merchant               $merchantModel,
-        Branch $branchModel
+        Branch                 $branchModel
     )
     {
         $this->userManagementService = $userManagementService;
@@ -61,7 +61,8 @@ class MerchantService implements IMerchantService
     /**
      * @throws Exception
      */
-    private function getCodeForMerchant(): string{
+    private function getCodeForMerchant(): string
+    {
         do {
             $code = random_int(1000, 999999);
         } while ($this->merchantModel->query()->where("code", $code)->first());
@@ -72,7 +73,8 @@ class MerchantService implements IMerchantService
     /**
      * @throws Exception
      */
-    private function getCodeForMerchantBranch(): string{
+    private function getCodeForMerchantBranch(): string
+    {
         do {
             $code = random_int(1000, 99999999);
         } while ($this->branchModel->query()->where("code", $code)->first());
@@ -89,22 +91,22 @@ class MerchantService implements IMerchantService
     /**
      * @throws Exception
      */
-    public function createMerchantBranchByMerchantId(User $user, int $merchantId, array $payload): Model
+    public function createMerchantBranchByMerchantId(User $user, array $payload): Model
     {
         /** @var Merchant $merchant */
-        $merchant = $this->merchantModel->query()->find($merchantId);
+        $merchant = $this->merchantModel->query()->find($user->merchant_id);
         if ($merchant == null) throw new InvalidArgumentException("merchant not found");
         $payload['code'] = $this->getCodeForMerchantBranch();
         $payload['created_by'] = $user->id;
         return $this->createMerchantBranch($user, $merchant, $payload);
     }
 
-    public function createMerchantUserByMerchantId(User $user, int $merchantId, array $payload): Model
+    public function createMerchantUserByMerchantId(User $user, array $payload): Model
     {
         /** @var Merchant $merchant */
-        $merchant = $this->merchantModel->query()->find($merchantId);
+        $merchant = $this->merchantModel->query()->find($user->merchant_id);
         if ($merchant == null) throw new InvalidArgumentException("merchant not found");
-        $payload['merchant_id'] = $merchantId;
+        $payload['merchant_id'] = $user->merchant_id;
         $payload['created_by'] = $user->id;
         return $this->userManagementService->createUser($payload);
     }
@@ -129,11 +131,10 @@ class MerchantService implements IMerchantService
     {
         /** @var Merchant $merchant */
         $merchant = $this->getMerchant($id);
-        if ($merchant != null) {
-            $merchant->status = $status;
-            $merchant->save();
-            $merchant->mainBranch()->update(['status' => $status]);
-        }
+        if ($merchant == null) return;
+        $merchant->status = $status;
+        $merchant->save();
+        $merchant->mainBranch()->update(['status' => $status]);
     }
 
     public function getMerchant(int $id): Model
@@ -150,44 +151,62 @@ class MerchantService implements IMerchantService
         }
     }
 
-    public function getMerchantBranches(int $id): LengthAwarePaginator
+    public function getMerchantBranches(User $user): LengthAwarePaginator
     {
         $pageSize = request()->query->get('page-size') ?? 20;
         $page = request()->query->get('page') ?? 1;
         /** @var Merchant $shop */
-        $shop = $this->merchantModel->query()->find($id);
+        $shop = $this->merchantModel->query()->find($user->merchant_id);
         return $shop->branches()->paginate($pageSize, ['*'], 'page', $page);
     }
 
-    public function getMerchantUsers(int $id): LengthAwarePaginator
+    public function getMerchantUsers(User $user): LengthAwarePaginator
     {
         $pageSize = request()->query->get('page-size') ?? 20;
         $page = request()->query->get('page') ?? 1;
         /** @var Merchant $merchant */
-        $merchant = $this->merchantModel->query()->find($id);
+        $merchant = $this->merchantModel->query()->find($user->merchant_id);
         return $merchant->users()->paginate($pageSize, ['*'], 'page', $page);
     }
 
-    public function deleteMerchant(int $id)
+    public function deleteMerchant(User $user)
     {
-        $shop = $this->getMerchant($id);
+        $shop = $this->getMerchant($user->merchant_id);
         if ($shop != null) $shop->delete();
     }
 
-    public function markAsActive(int $id)
+    public function markAsActive(User $user)
     {
-        $this->updateMerchantStatus($id, MerchantUtils::MERCHANT_STATUS_ACTIVE);
-
+        $this->updateMerchantStatus($user->merchant_id, MerchantUtils::MERCHANT_STATUS_ACTIVE);
     }
 
-    public function markAsBlocked(int $id)
+    public function markAsBlocked(User $user)
     {
-        $this->updateMerchantStatus($id, MerchantUtils::MERCHANT_STATUS_SUSPENDED);
-
+        $this->updateMerchantStatus($user->merchant_id, MerchantUtils::MERCHANT_STATUS_SUSPENDED);
     }
 
-    public function markAsPending(int $id)
+    public function markAsPending(User $user)
     {
-        $this->updateMerchantStatus($id, MerchantUtils::MERCHANT_STATUS_PENDING);
+        $this->updateMerchantStatus($user->merchant_id, MerchantUtils::MERCHANT_STATUS_PENDING);
+    }
+
+    public function deleteBranch(User $user, $branchId)
+    {
+        try {
+            $this->branchModel->query()->where('merchant_id', $user->merchant_id)->where('id', $branchId)->delete();
+        } catch (Exception $e) {
+
+        }
+    }
+
+    public function changeBranchStatus(User $user, int $branchId, string $status)
+    {
+        /** @var Branch $branch */
+        $branch = $this->branchModel->query()->where('merchant_id', $user->merchant_id)->where('id', $branchId)->first();
+        if ($branch == null) return;
+
+        $branch->status = $status;
+        if ($branch->isDirty())
+            $branch->save();
     }
 }

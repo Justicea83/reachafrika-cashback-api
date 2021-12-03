@@ -96,4 +96,11 @@ class AuthService implements IAuthService
             'joined' => $user->created_at,
         ];
     }
+
+    public function changePassword(User $user, $password)
+    {
+        $user->password = bcrypt($password);
+        if($user->isDirty())
+            $user->save();
+    }
 }

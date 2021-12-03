@@ -15,4 +15,5 @@ interface IAuthService
     public function sendForgotPasswordEmail(User $user);
     public function sendForgotPasswordEmailWithEmail(string $email);
     public function resetPassword(array $payload) : bool;
+    public function changePassword(User $user, $password);
 }

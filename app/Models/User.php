@@ -23,6 +23,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property mixed id
  * @property mixed merchant_id
  * @property float|int|mixed|string suspended_until
+ * @property mixed password
  */
 class User extends Authenticatable
 {
