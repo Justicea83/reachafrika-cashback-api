@@ -15,6 +15,7 @@ Route::prefix('v1/settings')
         //settlement banks
         Route::prefix('settlement-banks')->group(function (){
             Route::post('',[SettingsController::class,'createSettlementBank']);
+            Route::put('',[SettingsController::class,'updateSettlementBank']);
             Route::get('',[SettingsController::class,'getSettlementBank']);
         });
 

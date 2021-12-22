@@ -23,9 +23,9 @@ class CashbacksController extends Controller
         return $this->successResponse($this->cashbackService->createCashback($request->user(),$request->all()), Response::HTTP_CREATED);
     }
 
-    public function getCashbacks(CreateCashbackRequest $request): JsonResponse
+    public function getCashbacks(): JsonResponse
     {
-        return $this->successResponse($this->cashbackService->getCashbacks($request->user()));
+        return $this->successResponse($this->cashbackService->getCashbacks(request()->user()));
     }
 
     public function getCashback(int $id): JsonResponse
