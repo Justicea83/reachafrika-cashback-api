@@ -25,6 +25,8 @@ interface IMerchantService
 
     public function getMerchant(int $id): Model;
 
+    public function getMyMerchant(User $user): Model;
+
     public function updateMerchant(User $user, array $payload, int $id);
 
     public function getMerchantBranches(User $user): LengthAwarePaginator;

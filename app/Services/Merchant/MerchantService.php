@@ -209,4 +209,10 @@ class MerchantService implements IMerchantService
         if ($branch->isDirty())
             $branch->save();
     }
+
+
+    public function getMyMerchant(User $user): Model
+    {
+        return $this->merchantModel->query()->with(['mainBranch'])->find($user->merchant_id);
+    }
 }

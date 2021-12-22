@@ -103,4 +103,8 @@ class MerchantsController extends Controller
         return $this->noContent();
     }
 
+    public function getMyMerchant(): JsonResponse
+    {
+        return $this->successResponse($this->merchantService->getMyMerchant(request()->user()));
+    }
 }

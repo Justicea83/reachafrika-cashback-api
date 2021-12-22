@@ -12,6 +12,7 @@ Route::prefix('v1/merchants')->group(function () {
     //authenticated routes
     Route::middleware('auth:api')->group(function(){
         Route::get('', [MerchantsController::class, 'getMerchants']);
+        Route::get('me', [MerchantsController::class, 'getMyMerchant']);
         Route::get('{id}', [MerchantsController::class, 'getMerchant'])->whereNumber('id');
         Route::get('by-status/{status}', [MerchantsController::class, 'getMerchantsByStatus']);
         Route::put('{id}', [MerchantsController::class, 'updateMerchant'])->whereNumber('id');
