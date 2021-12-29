@@ -2,8 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\Category\MerchantCategory;
+use App\Models\Merchant\Branch;
 use App\Models\Merchant\Merchant;
+use App\Models\Category\MerchantCategory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class MerchantFactory extends Factory
@@ -25,12 +26,15 @@ class MerchantFactory extends Factory
         return [
             'name' => $this->faker->company(),
             'primary_email' => $this->faker->unique()->safeEmail(),
-            'primary_phone' =>$this->faker->unique()->phoneNumber(),
-            'country_id' => 3,
-            'code' => $this->faker->randomDigitNotNull(),
-            'website' => $this->faker->url,
+            'primary_phone' => $this->faker->unique()->phoneNumber(),
+            'country_id' =>  $this->faker->randomElement([83,161]),
+            'code' => $this->faker->unique()->randomNumber(6,true),
+            'website' => $this->faker->url(),
+            'status' => 'active',
             'primary_email_verified_at' => now()->toDateTimeString(),
-            'category_id' => MerchantCategory::factory(),
+            //'category_id' => MerchantCategory::factory(),
+            'category_id' => $this->faker->randomElement([1,2]),
+           // 'main_branch_id' => Branch::factory()
         ];
     }
 }

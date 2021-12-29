@@ -21,6 +21,10 @@ Route::prefix('v1/pos')->group(function () {
         Route::post('{id}/assign-to-branch', [PosController::class, 'assignPosToBranch']);
         Route::get('{id}/mark-as-pending', [PosController::class, 'markAsPending']);
         Route::get('{id}/mark-as-active', [PosController::class, 'markAsActive']);
+
+        Route::prefix('approval-requests')->group(function () {
+            Route::post('', [PosController::class, 'sendApprovalRequest']);
+        });
         //pos routes
     });
 });

@@ -23,14 +23,15 @@ class BranchFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->name,
+            'name' => $this->faker->name(),
             'opens_at' => '8:00',
             'closes_at' => '17:00',
-            'lat' => $this->faker->latitude,
-            'code' => $this->faker->randomDigitNotNull(),
-            'lng' => $this->faker->longitude,
+            'lat' => $this->faker->latitude(),
+            'code' => $this->faker->unique()->randomNumber(8,true),
+            'lng' => $this->faker->longitude(),
             'merchant_id' => Merchant::factory(),
-            'location' => $this->faker->realText
+            'description' => $this->faker->realText(),
+            'location' => $this->faker->city
         ];
     }
 }

@@ -19,8 +19,8 @@ Route::prefix('v1/merchants')->group(function () {
         Route::delete('', [MerchantsController::class, 'deleteMerchant']);
         Route::get('mark-as-blocked', [MerchantsController::class, 'markAsBlocked']);
         //users
-        Route::get('{id}/users', [MerchantsController::class, 'getMerchantUsers'])->whereNumber('id');
-        Route::post('{id}/users', [MerchantsController::class, 'createMerchantUser'])->whereNumber('id');
+        Route::get('users', [MerchantsController::class, 'getMerchantUsers'])->whereNumber('id');
+        Route::post('users', [MerchantsController::class, 'createMerchantUser'])->whereNumber('id');
         //branches
         Route::get('branches', [MerchantsController::class, 'getMerchantBranches']);
         Route::delete('branches/{id}', [MerchantsController::class, 'deleteBranch'])->whereNumber('id');

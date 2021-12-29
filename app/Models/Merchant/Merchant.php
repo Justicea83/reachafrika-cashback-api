@@ -2,16 +2,14 @@
 
 namespace App\Models\Merchant;
 
+use App\Models\BaseModel;
 use App\Models\Category\MerchantCategory;
+use App\Models\Misc\Country;
 use App\Models\User;
-use App\Traits\UnixTimestampsFormat;
 use ArrayAccess;
 use Database\Factories\MerchantFactory;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * @property mixed id
@@ -28,14 +26,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property array|ArrayAccess|mixed website
  * @property array|ArrayAccess|mixed about
  * @property false|mixed|string avatar
+ * @property Country $country
  */
-class Merchant extends Model
+class Merchant extends BaseModel
 {
-    use HasFactory,SoftDeletes,UnixTimestampsFormat;
-
-    protected $guarded = ['id','created_at','deleted_at','updated_at'];
-    protected $hidden = ['deleted_at','created_by','last_updated_by','last_deleted_by'];
-
     protected $casts = [
         'extra_data' => 'array'
     ];
@@ -63,5 +57,10 @@ class Merchant extends Model
     protected static function newFactory(): MerchantFactory
     {
         return MerchantFactory::new();
+    }
+
+    public function country(): BelongsTo
+    {
+        return $this->belongsTo(Country::class);
     }
 }

@@ -2,7 +2,11 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\User;
+use App\Validations\Cashback\MakePaymentRequestValidation;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Validator;
 
 class MobileLoginRequest extends FormRequest
 {
@@ -11,9 +15,9 @@ class MobileLoginRequest extends FormRequest
      *
      * @return bool
      */
-    public function authorize()
+    public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -21,10 +25,28 @@ class MobileLoginRequest extends FormRequest
      *
      * @return array
      */
-    public function rules()
+    public function rules(): array
     {
         return [
-            //
+            'email' => 'required',
+            'password' => 'required'
         ];
+    }
+
+    /**
+     * Configure the validator instance.
+     *
+     * @param Validator $validator
+     * @return void
+     */
+    public function withValidator(Validator $validator)
+    {
+        $validator->after(function (Validator $validator) {
+            /** @var User $user */
+            $user = User::query()->where('email', $this->get('email'))->first();
+            if (is_null($user) || !Hash::check($this->get('password'), $user->password)) {
+                $validator->errors()->add('email', 'your credentials do not match our records');
+            }
+        });
     }
 }

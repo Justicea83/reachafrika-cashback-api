@@ -2,6 +2,7 @@
 
 namespace App\Services\Merchant\Pos;
 
+use App\Models\Merchant\ApprovalRequest;
 use App\Models\Merchant\Pos;
 use App\Models\User;
 use App\Utils\MerchantUtils;
@@ -14,12 +15,15 @@ use Illuminate\Database\Eloquent\Model;
 class PosService implements IPosService
 {
     private Pos $posModel;
+    private ApprovalRequest $approvalRequestModel;
 
     function __construct(
-        Pos $posModel
+        Pos             $posModel,
+        ApprovalRequest $approvalRequestModel
     )
     {
         $this->posModel = $posModel;
+        $this->approvalRequestModel = $approvalRequestModel;
     }
 
     /**
@@ -28,9 +32,12 @@ class PosService implements IPosService
     public function createPos(User $user, array $payload): Model
     {
         if ($user->merchant_id == null) throw new InvalidArgumentException("you cannot create a pos because you don't have a merchant");
+
+        if ($this->posModel->query()->where('user_id', $user->id)->count() > 1) throw new InvalidArgumentException("this user is already assigned to POS");
+
         $payload['created_by'] = $user->id;
         $payload['merchant_id'] = $user->merchant_id;
-        $payload['code'] =$this->getCodeForPos();
+        $payload['code'] = $this->getCodeForPos();
 
         /** @var Pos $pos */
         $pos = $this->posModel->query()->create($payload);
@@ -40,7 +47,8 @@ class PosService implements IPosService
     /**
      * @throws Exception
      */
-    private function getCodeForPos(): string{
+    private function getCodeForPos(): string
+    {
         do {
             $code = random_int(1000, 99999999);
         } while ($this->posModel->query()->where("code", $code)->first());
@@ -53,7 +61,7 @@ class PosService implements IPosService
         $pageSize = request()->query->get('page-size') ?? 20;
         $page = request()->query->get('page') ?? 1;
         return $this->posModel->query()
-            ->where('merchant_id',$user->merchant_id)
+            ->where('merchant_id', $user->merchant_id)
             ->where('branch_id', $branchId)
             ->paginate($pageSize, ['*'], 'page', $page);
     }
@@ -63,7 +71,7 @@ class PosService implements IPosService
         $pageSize = request()->query->get('page-size') ?? 20;
         $page = request()->query->get('page') ?? 1;
         return $this->posModel->query()
-            ->where('merchant_id',$user->merchant_id)
+            ->where('merchant_id', $user->merchant_id)
             ->paginate($pageSize, ['*'], 'page', $page);
     }
 
@@ -138,13 +146,37 @@ class PosService implements IPosService
     {
         return $this->posModel->query()
             ->onlyTrashed()
-            ->where('merchant_id',$user->merchant_id)
+            ->where('merchant_id', $user->merchant_id)
             ->get();
     }
 
-    public function undelete(int $id) : Model
+    public function undelete(int $id): Model
     {
         $this->posModel->query()->withTrashed()->find($id)->restore();
         return $this->getPos($id);
+    }
+
+    public function sendApprovalRequest(User $user, array $payload, string $userAgent)
+    {
+        $pos = $user->pos;
+        $country = $user->merchant->country;
+        if ($pos == null) throw new InvalidArgumentException('this users has not been assigned a POS');
+        if ($country == null) throw new InvalidArgumentException('this merchant needs to be assigned to a country');
+
+        $this->approvalRequestModel->query()->create([
+            'pos_id' => $pos->id,
+            'phone' => $payload['phone'],
+            'amount' => $payload['amount'],
+            'currency' => $country->currency,
+            'currency_symbol' => $country->currency_symbol,
+            'created_by' => $user->id,
+            'extra_info'=> json_encode(
+                [
+                    'platform' => $userAgent
+                ]
+            )
+        ]);
+
+        //TODO send broadcasts here
     }
 }

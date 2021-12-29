@@ -2,9 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Merchant\Merchant;
+use App\Models\Merchant\Pos;
 use App\Traits\UnixTimestampsFormat;
 use Illuminate\Auth\Passwords\CanResetPassword as ResetPassword;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -24,6 +28,8 @@ use Spatie\Permission\Traits\HasRoles;
  * @property mixed merchant_id
  * @property float|int|mixed|string suspended_until
  * @property mixed password
+ * @property Pos $pos
+ * @property Merchant $merchant
  */
 class User extends Authenticatable
 {
@@ -44,5 +50,14 @@ class User extends Authenticatable
         'phone_verified_at' => 'datetime',
     ];
 
+    public function pos(): HasOne
+    {
+        return $this->hasOne(Pos::class);
+    }
+
+    public function merchant(): BelongsTo
+    {
+        return $this->belongsTo(Merchant::class);
+    }
 
 }

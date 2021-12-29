@@ -8,6 +8,7 @@ use App\Mail\Auth\ForgotPasswordMail;
 use App\Mail\Auth\NewUserPasswordChange;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 
@@ -25,16 +26,35 @@ class AuthService implements IAuthService
         /** @var User $user */
         $user = $this->userModel->query()->where('email', $data['email'])->first();
 
-        if (!$user) return [];
+        $response = Http::asForm()->post(route('passport.token'), [
+            'grant_type' => 'password',
+            'client_id' => config('env.auth.client_id'),
+            'client_secret' => config('env.auth.client_secret'),
+            'username' => $data['email'],
+            'password' => $data['password'],
+            'scope' => '',
+        ]);
+        $responseInfo = $response->json();
+        $responseInfo['user'] = $this->getAuthUserProfile($user);
+        return $responseInfo;
+    }
 
-        return [
-            'token' => $user->createToken($data['device_name'])->plainTextToken
-        ];
+    public function loginWithRefreshToken(array $data): array
+    {
+        $response = Http::asForm()->acceptJson()
+            ->post(route('passport.token'), [
+                'grant_type' => 'refresh_token',
+                'refresh_token' => $data['refresh_token'],
+                'client_id' => config('env.auth.client_id'),
+                'client_secret' => config('env.auth.client_secret'),
+                'scope' => '',
+            ]);
+        return $response->json();
     }
 
     public function mobileLogout(User $user)
     {
-        $user->currentAccessToken()->delete();
+        $user->token()->revoke();
     }
 
     public function logoutOfAllDevices(User $user)
@@ -44,7 +64,7 @@ class AuthService implements IAuthService
 
     public function sendForgotPasswordEmail(?User $user)
     {
-        if($user == null)return;
+        if ($user == null) return;
         $token = Password::createToken($user);
         Mail::to($user)->queue(new NewUserPasswordChange($user, "$token?email=$user->email"));
     }
@@ -52,7 +72,7 @@ class AuthService implements IAuthService
     public function sendForgotPasswordEmailWithEmail(string $email)
     {
         /** @var User $user */
-        $user = $this->userModel->query()->where('email',$email)->first();
+        $user = $this->userModel->query()->where('email', $email)->first();
         $token = Password::createToken($user);
         Mail::to($user)->queue(new ForgotPasswordMail($user, "$token?email=$user->email"));
     }
@@ -100,7 +120,9 @@ class AuthService implements IAuthService
     public function changePassword(User $user, $password)
     {
         $user->password = bcrypt($password);
-        if($user->isDirty())
+        if ($user->isDirty())
             $user->save();
     }
+
+
 }

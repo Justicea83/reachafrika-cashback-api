@@ -4,6 +4,7 @@ namespace App\Http\Controllers\V1\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\ForgotPasswordRequest;
+use App\Http\Requests\Auth\LoginWithRefreshTokenRequest;
 use App\Http\Requests\Auth\MobileLoginRequest;
 use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Models\User;
@@ -25,6 +26,11 @@ class AuthController extends Controller
     public function mobileLogin(MobileLoginRequest $request): JsonResponse
     {
         return $this->successResponse($this->authService->mobileAppLogin($request->all()));
+    }
+
+    public function refreshToken(LoginWithRefreshTokenRequest $request): JsonResponse
+    {
+        return $this->successResponse($this->authService->loginWithRefreshToken($request->all()));
     }
 
     public function getAuthenticatedUser(Request $request): JsonResponse

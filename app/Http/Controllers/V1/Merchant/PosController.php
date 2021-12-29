@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Merchant\Pos\AssignToBranchRequest;
 use App\Http\Requests\Merchant\Pos\AssignToUserRequest;
 use App\Http\Requests\Merchant\Pos\CreatePosRequest;
+use App\Http\Requests\Merchant\Pos\SendApprovalRequest;
 use App\Http\Requests\Merchant\Pos\UpdatePosRequest;
 use App\Services\Merchant\Pos\IPosService;
 use Illuminate\Http\JsonResponse;
@@ -96,6 +97,12 @@ class PosController extends Controller
     public function deletePos(int $id): Response
     {
         $this->posService->deletePos($id);
+        return $this->noContent();
+    }
+
+    public function sendApprovalRequest(SendApprovalRequest $request): Response
+    {
+        $this->posService->sendApprovalRequest($request->user(), $request->only(['phone', 'amount']), $request->header('Api-User-Agent'));
         return $this->noContent();
     }
 }
