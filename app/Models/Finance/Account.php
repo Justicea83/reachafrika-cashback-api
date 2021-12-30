@@ -2,10 +2,19 @@
 
 namespace App\Models\Finance;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
+use App\Models\Merchant\Merchant;
+use Database\Factories\AccountFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Account extends Model
+class Account extends BaseModel
 {
-    use HasFactory;
+    protected static function newFactory(): AccountFactory
+    {
+        return AccountFactory::new();
+    }
+    public function merchant(): BelongsTo
+    {
+        return $this->belongsTo(Merchant::class);
+    }
 }

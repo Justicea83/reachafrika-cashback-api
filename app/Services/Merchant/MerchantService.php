@@ -10,6 +10,7 @@ use App\Utils\MerchantUtils;
 use Exception;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
 class MerchantService implements IMerchantService
@@ -39,8 +40,10 @@ class MerchantService implements IMerchantService
             'merchant' => $merchant
         ] = $payload;
 
+        //create merchant
         /** @var Merchant $createdMerchant */
         $createdMerchant = $this->createMerchant($user, $merchant);
+
 
         /** @var User $createdUser */
         $userData['merchant_id'] = $createdMerchant->id;
@@ -50,12 +53,25 @@ class MerchantService implements IMerchantService
     /**
      * @throws Exception
      */
-    public function createMerchant(?User $user, array $payload): Model
+    public function createMerchant(?User $user, array $payload): ?Model
     {
+        $merchant = null;
         if ($user != null)
             $payload['created_by'] = $user->id;
         $payload['code'] = $this->getCodeForMerchant();
-        return $this->merchantModel->query()->create($payload);
+
+        DB::beginTransaction();
+
+        try {
+            /** @var Merchant $merchant */
+            $merchant = $this->merchantModel->query()->create($payload);
+            $merchant->account()->create();
+        } catch (Exception $e) {
+            DB::rollBack();
+        }
+
+        DB::commit();
+        return $merchant;
     }
 
     /**
@@ -131,13 +147,13 @@ class MerchantService implements IMerchantService
     {
         /** @var Merchant $merchant */
         $merchant = $this->getMerchant($id);
-        if ($merchant == null) return;
+        if (is_null($merchant)) return;
         $merchant->status = $status;
         $merchant->save();
         $merchant->mainBranch()->update(['status' => $status]);
     }
 
-    public function getMerchant(int $id): Model
+    public function getMerchant(int $id): ?Model
     {
         return $this->merchantModel->query()->with(['mainBranch'])->find($id);
     }

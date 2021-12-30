@@ -35,7 +35,8 @@ class AuthService implements IAuthService
             'scope' => '',
         ]);
         $responseInfo = $response->json();
-        $responseInfo['user'] = $this->getAuthUserProfile($user);
+        if ($response->ok())
+            $responseInfo['user'] = $this->getAuthUserProfile($user);
         return $responseInfo;
     }
 

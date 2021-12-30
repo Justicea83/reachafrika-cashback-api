@@ -4,12 +4,14 @@ namespace App\Models\Merchant;
 
 use App\Models\BaseModel;
 use App\Models\Category\MerchantCategory;
+use App\Models\Finance\Account;
 use App\Models\Misc\Country;
 use App\Models\User;
 use ArrayAccess;
 use Database\Factories\MerchantFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property mixed id
@@ -62,5 +64,10 @@ class Merchant extends BaseModel
     public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class);
+    }
+
+    public function account(): HasOne
+    {
+        return $this->hasOne(Account::class);
     }
 }
