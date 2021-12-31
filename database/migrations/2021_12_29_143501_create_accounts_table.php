@@ -1,11 +1,13 @@
 <?php
 
+use App\Traits\CommonColumns;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 class CreateAccountsTable extends Migration
 {
+    use CommonColumns;
     /**
      * Run the migrations.
      *
@@ -15,7 +17,10 @@ class CreateAccountsTable extends Migration
     {
         Schema::create('accounts', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->float('balance')->default(0);
+            $table->foreignId('merchant_id')->constrained();
+            $table->dateTime('last_settlement_at')->nullable();
+            $this->useCommonColumns($table);
         });
     }
 

@@ -36,6 +36,7 @@ class StarterSeeder extends Seeder
                 'primary_email_verified_at' => now()->toDateTimeString(),
                 'category_id' => $defaultCategory->id
             ]);
+            $defaultMerchant->account()->create();
             $defaultUser = User::query()->create([
                // 'merchant_id' => $defaultMerchant->id,
                 'merchant_id' => 1,

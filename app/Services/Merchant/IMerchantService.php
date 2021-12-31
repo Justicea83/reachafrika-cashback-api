@@ -11,7 +11,7 @@ interface IMerchantService
 {
     public function setup(?User $user, array $payload);
 
-    public function createMerchant(?User $user, array $payload): Model;
+    public function createMerchant(?User $user, array $payload): ?Model;
 
     public function createMerchantBranch(User $user, Merchant $merchant, array $payload): Model;
 
@@ -23,7 +23,7 @@ interface IMerchantService
 
     public function getMerchantsByStatus(string $status): LengthAwarePaginator;
 
-    public function getMerchant(int $id): Model;
+    public function getMerchant(int $id): ?Model;
 
     public function getMyMerchant(User $user): Model;
 

@@ -20,5 +20,6 @@ class DatabaseSeeder extends Seeder
         $this->call(MerchantCategoryTableSeeder::class);
         $this->call(StarterSeeder::class);
        // $this->call(CityTableSeeder::class);
+       // $this->call(MerchantsTableSeeder::class);
     }
 }
