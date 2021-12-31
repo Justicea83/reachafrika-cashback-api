@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 /**
  * @property mixed id
  * @property mixed|string status
+ * @property mixed $name
  */
 class Branch extends Model
 {
