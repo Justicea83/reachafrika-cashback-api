@@ -105,4 +105,9 @@ class PosController extends Controller
         $this->posService->sendApprovalRequest($request->user(), $request->only(['phone', 'amount']), $request->header('Api-User-Agent'));
         return $this->noContent();
     }
+
+    public function generateQrCode(int $posId): JsonResponse
+    {
+        return $this->successResponse($this->posService->getQrCode(request()->user(),$posId));
+    }
 }

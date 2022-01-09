@@ -38,4 +38,7 @@ interface IPosService
     public function assignPosToBranch(int $id, int $branchId);
 
     public function sendApprovalRequest(User $user, array $payload, string $userAgent);
+
+    public function getQrCode(User $user, int $posId): string;
+
 }

@@ -40,6 +40,13 @@ return [
             'root' => storage_path('app/merchants'),
         ],
 
+        'qr-codes' => [
+            'driver' => 'local',
+            'root' => storage_path('app\\public\\qr-codes'),
+            'url' => env('APP_URL') . '/storage/qr-codes',
+            'visibility' => 'public',
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),

@@ -3,11 +3,20 @@
 namespace App\Services\Merchant\Pos;
 
 use App\Models\Merchant\ApprovalRequest;
+use App\Models\Merchant\Merchant;
 use App\Models\Merchant\Pos;
 use App\Models\User;
 use App\Utils\MerchantUtils;
+use Endroid\QrCode\Builder\Builder;
+use Endroid\QrCode\Encoding\Encoding;
+use Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelHigh;
+use Endroid\QrCode\Label\Alignment\LabelAlignmentCenter;
+use Endroid\QrCode\Label\Font\NotoSans;
+use Endroid\QrCode\RoundBlockSizeMode\RoundBlockSizeModeMargin;
+use Endroid\QrCode\Writer\PngWriter;
 use Exception;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
@@ -176,7 +185,44 @@ class PosService implements IPosService
                 ]
             )
         ]);
+    }
 
-        //TODO send broadcasts here
+    public function getQrCode(User $user, int $posId): string
+    {
+        /** @var Pos $pos */
+        $pos = $this->posModel->query()->find($posId);
+        if (is_null($pos)) throw new InvalidArgumentException("pos not found");
+        return $this->genQrCode($user->merchant, $pos);
+    }
+
+    private function genQrCode(Merchant $merchant, Pos $pos): string
+    {
+        $this->makeDirectories();
+        $result = Builder::create()
+            ->writer(new PngWriter())
+            ->writerOptions([])
+            ->data($pos->id)
+            ->encoding(new Encoding('UTF-8'))
+            ->errorCorrectionLevel(new ErrorCorrectionLevelHigh())
+            ->size(400)
+            ->margin(10)
+            ->roundBlockSizeMode(new RoundBlockSizeModeMargin())
+            ->logoPath(public_path('images\mini.jpg'))
+            // ->logoPath(asset('images/mini.jpg'))
+            ->labelText($merchant->name)
+            ->labelFont(new NotoSans(20))
+            ->labelAlignment(new LabelAlignmentCenter())
+            ->build();
+
+        $result->saveToFile(sprintf("%s\\%s.png", config('filesystems.disks.qr-codes.root'), $pos->id));
+
+        return asset("storage/qr-codes/$pos->id.png");
+    }
+
+    private function makeDirectories()
+    {
+        if (!Storage::disk('local')->exists('public\\qr-codes')) {
+            Storage::disk('local')->makeDirectory('public\\qr-codes');
+        }
     }
 }

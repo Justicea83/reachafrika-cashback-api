@@ -231,4 +231,5 @@ class MerchantService implements IMerchantService
     {
         return $this->merchantModel->query()->with(['mainBranch'])->find($user->merchant_id);
     }
+
 }
