@@ -125,7 +125,7 @@ class PosService implements IPosService
         $this->posModel->query()->find($id)->delete();
     }
 
-    public function getPos(int $posId): Model
+    public function getPos(int $posId): ?Model
     {
         return $this->posModel->query()->with(['user', 'branch'])->find($posId);
     }
@@ -224,5 +224,15 @@ class PosService implements IPosService
         if (!Storage::disk('local')->exists('public\\qr-codes')) {
             Storage::disk('local')->makeDirectory('public\\qr-codes');
         }
+    }
+
+    public function getMyApprovals(User $user): LengthAwarePaginator
+    {
+        // TODO: Implement getMyApprovals() method.
+    }
+
+    public function approvalActionCall(User $user, array $payload)
+    {
+        // TODO: Implement approvalActionCall() method.
     }
 }

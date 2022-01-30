@@ -7,6 +7,7 @@ use App\Models\Merchant\Merchant;
 use App\Models\User;
 use App\Services\Settings\Finance\PaymentMode\IPaymentModeService;
 use App\Services\UserManagement\IUserManagementService;
+use App\Utils\Finance\Merchant\Account\AccountUtils;
 use App\Utils\Finance\PaymentMode\PaymentModeUtils;
 use App\Utils\MerchantUtils;
 use Exception;
@@ -75,8 +76,14 @@ class MerchantService implements IMerchantService
 
         /** @var Merchant $merchant */
         $merchant = $this->merchantModel->query()->create($payload);
-        //TODO create accounts
-        $merchant->account()->create();
+
+        foreach (AccountUtils::ALL_ACCOUNT_TYPES as $accountType){
+            $merchant->accounts()->create([
+                'currency' => $merchant->country->currency,
+                'type' => $accountType
+            ]);
+        }
+
 
         // create default payment method
         $this->paymentModeService->addPaymentModeFromName($merchant, PaymentModeUtils::PAYMENT_MODE_REACHAFRIKA, true);

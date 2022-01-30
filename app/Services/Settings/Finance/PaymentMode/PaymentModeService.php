@@ -53,7 +53,7 @@ class PaymentModeService implements IPaymentModeService
 
     public function getPaymentModes(User $user): Collection
     {
-        return $this->merchantPaymentModeModel->query()->with(['paymentMode'])->get();
+        return $this->merchantPaymentModeModel->query()->with(['paymentMode'])->where('merchant_id',$user->merchant_id)->get();
     }
 
     public function toggleActive(User $user, int $paymentModeId)

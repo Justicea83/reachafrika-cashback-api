@@ -17,6 +17,10 @@ class PaymentModeTableSeeder extends Seeder
     {
         $modes = [
             [
+                'name' => PaymentModeUtils::PAYMENT_MODE_CASH,
+                'display_name' => 'Cash/Money'
+            ],
+            [
                 'name' => PaymentModeUtils::PAYMENT_MODE_CARD,
                 'display_name' => 'Card'
             ],
@@ -39,10 +43,7 @@ class PaymentModeTableSeeder extends Seeder
         ];
 
         foreach ($modes as $mode) {
-            $check = PaymentMode::query()->where('name', $mode['name'])->count();
-            if ($check <= 0) {
-                PaymentMode::query()->create($mode);
-            }
+            PaymentMode::query()->firstOrCreate($mode);
         }
     }
 }

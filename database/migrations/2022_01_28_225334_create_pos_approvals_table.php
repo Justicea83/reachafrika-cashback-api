@@ -1,13 +1,15 @@
 <?php
 
 use App\Traits\CommonColumns;
+use App\Utils\Status;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateAccountsTable extends Migration
+class CreatePosApprovalsTable extends Migration
 {
     use CommonColumns;
+
     /**
      * Run the migrations.
      *
@@ -15,14 +17,13 @@ class CreateAccountsTable extends Migration
      */
     public function up()
     {
-        Schema::create('accounts', function (Blueprint $table) {
+        Schema::create('pos_approvals', function (Blueprint $table) {
             $table->id();
-            $table->float('balance')->default(0);
-            $table->string('type');
-            $table->string('currency');
-            $table->foreignId('merchant_id')->constrained();
-            $table->dateTime('last_settlement_at')->nullable();
-            $table->unique(['type','currency','merchant_id']);
+            $table->string('reference');
+            $table->string('status')->default(Status::STATUS_PENDING);
+            $table->foreignId('pos_id')->constrained();
+            $table->string('recipient_name');
+            $table->string('recipient_phone');
             $this->useCommonColumns($table);
         });
     }
@@ -34,6 +35,6 @@ class CreateAccountsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('accounts');
+        Schema::dropIfExists('pos_approvals');
     }
 }

@@ -11,7 +11,7 @@ interface IPosService
 {
     public function createPos(User $user, array $payload): Model;
 
-    public function getPos(int $posId): Model;
+    public function getPos(int $posId): ?Model;
 
     public function getAllPos(User $user): LengthAwarePaginator;
 
@@ -40,5 +40,9 @@ interface IPosService
     public function sendApprovalRequest(User $user, array $payload, string $userAgent);
 
     public function getQrCode(User $user, int $posId): string;
+
+    public function getMyApprovals(User $user) : LengthAwarePaginator;
+
+    public function approvalActionCall(User $user,array $payload);
 
 }

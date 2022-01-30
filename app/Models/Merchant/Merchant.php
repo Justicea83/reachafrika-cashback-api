@@ -70,4 +70,9 @@ class Merchant extends BaseModel
     {
         return $this->hasOne(Account::class);
     }
+
+    public function accounts(): HasMany
+    {
+        return $this->hasMany(Account::class);
+    }
 }

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class PaymentModeUtils
 {
     const PAYMENT_MODE_CARD = 'card';
+    const PAYMENT_MODE_CASH = 'cash';
     const PAYMENT_MODE_BANK = 'bank';
     const PAYMENT_MODE_MOMO = 'momo';
     const PAYMENT_MODE_REACHAFRIKA = 'reachafrika';
