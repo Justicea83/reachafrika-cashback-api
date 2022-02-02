@@ -2,10 +2,13 @@
 
 namespace App\Services\Merchant\Pos;
 
+use App\Dtos\Pos\PosApprovalDto;
 use App\Models\Merchant\ApprovalRequest;
 use App\Models\Merchant\Merchant;
 use App\Models\Merchant\Pos;
+use App\Models\Merchant\PosApproval;
 use App\Models\User;
+use App\Utils\General\FilterOptions;
 use App\Utils\MerchantUtils;
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Encoding\Encoding;
@@ -25,14 +28,17 @@ class PosService implements IPosService
 {
     private Pos $posModel;
     private ApprovalRequest $approvalRequestModel;
+    private PosApproval $posApprovalModel;
 
     function __construct(
         Pos             $posModel,
-        ApprovalRequest $approvalRequestModel
+        ApprovalRequest $approvalRequestModel,
+        PosApproval $posApprovalModel
     )
     {
         $this->posModel = $posModel;
         $this->approvalRequestModel = $approvalRequestModel;
+        $this->posApprovalModel = $posApprovalModel;
     }
 
     /**
@@ -226,9 +232,16 @@ class PosService implements IPosService
         }
     }
 
-    public function getMyApprovals(User $user): LengthAwarePaginator
+    public function getMyApprovals(User $user, FilterOptions $filterOptions): LengthAwarePaginator
     {
-        // TODO: Implement getMyApprovals() method.
+        $pagedData =  $this->posApprovalModel->query()->where('pos_id', $user->pos->id)
+            ->latest()
+            ->paginate($filterOptions->pageSize, ['*'], 'page', $filterOptions->page);
+
+        $pagedData->getCollection()->transform(function (PosApproval $posApproval) {
+            return PosApprovalDto::map($posApproval);
+        });
+        return $pagedData;
     }
 
     public function approvalActionCall(User $user, array $payload)

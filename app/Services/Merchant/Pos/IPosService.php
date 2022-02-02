@@ -3,6 +3,7 @@
 namespace App\Services\Merchant\Pos;
 
 use App\Models\User;
+use App\Utils\General\FilterOptions;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
@@ -41,8 +42,8 @@ interface IPosService
 
     public function getQrCode(User $user, int $posId): string;
 
-    public function getMyApprovals(User $user) : LengthAwarePaginator;
+    public function getMyApprovals(User $user, FilterOptions $filterOptions): LengthAwarePaginator;
 
-    public function approvalActionCall(User $user,array $payload);
+    public function approvalActionCall(User $user, array $payload);
 
 }

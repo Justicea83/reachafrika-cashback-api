@@ -22,6 +22,8 @@ class CreatePosApprovalsTable extends Migration
             $table->string('reference');
             $table->string('status')->default(Status::STATUS_PENDING);
             $table->foreignId('pos_id')->constrained();
+            $table->float('amount_due');
+            $table->foreignId('payment_mode_id')->constrained();
             $table->string('recipient_name');
             $table->string('recipient_phone');
             $this->useCommonColumns($table);

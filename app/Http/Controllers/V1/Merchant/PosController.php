@@ -9,6 +9,7 @@ use App\Http\Requests\Merchant\Pos\CreatePosRequest;
 use App\Http\Requests\Merchant\Pos\SendApprovalRequest;
 use App\Http\Requests\Merchant\Pos\UpdatePosRequest;
 use App\Services\Merchant\Pos\IPosService;
+use App\Utils\General\FilterOptions;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -108,6 +109,14 @@ class PosController extends Controller
 
     public function generateQrCode(int $posId): JsonResponse
     {
-        return $this->successResponse($this->posService->getQrCode(request()->user(),$posId));
+        return $this->successResponse($this->posService->getQrCode(request()->user(), $posId));
+    }
+
+    public function getMyApprovals(): JsonResponse
+    {
+        return $this->successResponse($this->posService->getMyApprovals(request()->user(),
+            new FilterOptions(request()->query('page') ?? 1, request()->query('page-size') ?? 25, request()->query('search-query'))
+
+        ));
     }
 }
