@@ -30,6 +30,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property mixed password
  * @property Pos $pos
  * @property Merchant $merchant
+ * @property string $fullName
  */
 class User extends Authenticatable
 {
@@ -58,6 +59,11 @@ class User extends Authenticatable
     public function merchant(): BelongsTo
     {
         return $this->belongsTo(Merchant::class);
+    }
+
+    public function getFullNameAttribute(): string
+    {
+        return $this->first_name . ' ' . $this->last_name;
     }
 
 }

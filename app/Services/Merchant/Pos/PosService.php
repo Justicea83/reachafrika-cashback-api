@@ -3,11 +3,14 @@
 namespace App\Services\Merchant\Pos;
 
 use App\Dtos\Pos\PosApprovalDto;
+use App\Entities\Responses\Pos\DashboardStats;
+use App\Models\Finance\Transaction;
 use App\Models\Merchant\ApprovalRequest;
 use App\Models\Merchant\Merchant;
 use App\Models\Merchant\Pos;
 use App\Models\Merchant\PosApproval;
 use App\Models\User;
+use App\Utils\Finance\Merchant\TransactionUtils;
 use App\Utils\General\FilterOptions;
 use App\Utils\MerchantUtils;
 use Endroid\QrCode\Builder\Builder;
@@ -29,16 +32,19 @@ class PosService implements IPosService
     private Pos $posModel;
     private ApprovalRequest $approvalRequestModel;
     private PosApproval $posApprovalModel;
+    private Transaction $transactionModel;
 
     function __construct(
         Pos             $posModel,
         ApprovalRequest $approvalRequestModel,
-        PosApproval $posApprovalModel
+        PosApproval     $posApprovalModel,
+        Transaction     $transactionModel
     )
     {
         $this->posModel = $posModel;
         $this->approvalRequestModel = $approvalRequestModel;
         $this->posApprovalModel = $posApprovalModel;
+        $this->transactionModel = $transactionModel;
     }
 
     /**
@@ -185,7 +191,7 @@ class PosService implements IPosService
             'currency' => $country->currency,
             'currency_symbol' => $country->currency_symbol,
             'created_by' => $user->id,
-            'extra_info'=> json_encode(
+            'extra_info' => json_encode(
                 [
                     'platform' => $userAgent
                 ]
@@ -234,7 +240,7 @@ class PosService implements IPosService
 
     public function getMyApprovals(User $user, FilterOptions $filterOptions): LengthAwarePaginator
     {
-        $pagedData =  $this->posApprovalModel->query()->where('pos_id', $user->pos->id)
+        $pagedData = $this->posApprovalModel->query()->where('pos_id', $user->pos->id)
             ->latest()
             ->paginate($filterOptions->pageSize, ['*'], 'page', $filterOptions->page);
 
@@ -247,5 +253,53 @@ class PosService implements IPosService
     public function approvalActionCall(User $user, array $payload)
     {
         // TODO: Implement approvalActionCall() method.
+    }
+
+    public function getMobileAppDashboardStats(User $user): DashboardStats
+    {
+        $merchant = $user->merchant;
+        $pos = $user->pos;
+
+        $currency = $merchant->country->currency;
+
+        /*dd([
+            now()->startOfDay()->unix(),
+            now()->endOfDay()->unix(),
+            now()->unix(),
+        ]);*/
+
+        $todaySales = $this->transactionModel->query()->where('merchant_id', $merchant->id)
+            ->where('pos_id', $pos->id)
+            ->where('transaction', TransactionUtils::TRANSACTION_CREDIT)
+            // ->whereDate('created_at', now()->toDateString())
+            ->whereBetween('created_at', [now()->startOfDay()->unix(), now()->endOfDay()->unix()])
+            ->sum('amount');
+
+        $totalWeekly = $this->transactionModel->query()
+            ->where('merchant_id', $merchant->id)
+            ->where('pos_id', $pos->id)
+            ->where('transaction', TransactionUtils::TRANSACTION_CREDIT)
+            ->whereBetween('created_at', [now()->startOfWeek()->unix(), now()->endOfWeek()->unix()])
+            ->sum('amount');
+
+        $totalMonthly = $this->transactionModel->query()
+            ->where('merchant_id', $merchant->id)
+            ->where('pos_id', $pos->id)
+            ->where('transaction', TransactionUtils::TRANSACTION_CREDIT)
+            ->whereBetween('created_at', [now()->startOfMonth()->unix(), now()->endOfMonth()->unix()])
+            ->sum('amount');
+
+        return DashboardStats::instance()->setMerchantName($merchant->name)
+            ->setMyName($user->fullName)
+            ->setNotificationCount(0)
+            ->setPosCode($pos->code)
+            ->setSalesThisMonth(self::formatAmountWithCurrency($currency, $totalMonthly))
+            ->setSalesThisWeek(self::formatAmountWithCurrency($currency, $totalWeekly))
+            ->setSalesToday(self::formatAmountWithCurrency($currency, $todaySales));
+    }
+
+    private static function formatAmountWithCurrency(string $currency, float $amount): string
+    {
+        return sprintf("%s %s", $currency, number_format($amount, 2));
     }
 }

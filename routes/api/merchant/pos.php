@@ -10,7 +10,9 @@ Route::prefix('v1/pos')->group(function () {
         Route::get('', [PosController::class, 'getAllPos']);
         Route::get('{id}/undelete', [PosController::class, 'undeletePos']);
         Route::get('archived', [PosController::class, 'getArchivedPos']);
-        Route::get('{id}', [PosController::class, 'getPos']);
+        Route::get('get-mobile-app-dashboard-stats', [PosController::class, 'getMobileAppDashboardStats']);
+        Route::get('{id}', [PosController::class, 'getPos'])->whereNumber('id');
+        Route::get('get-mobile-app-dashboard-stats', [PosController::class, 'getMobileAppDashboardStats']);
         Route::get('generate-qr-code/{id}', [PosController::class, 'generateQrCode']);
         Route::get('by-branch/{id}', [PosController::class, 'getBranchPos']);
         Route::get('by-merchant/{id}', [PosController::class, 'getMerchantPos']);

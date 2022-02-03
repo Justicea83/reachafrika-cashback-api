@@ -12,6 +12,7 @@ Route::prefix('v1/auth')->group(function (){
     Route::middleware('auth:api')->group(function () {
         Route::post('logout',[AuthController::class,'mobileLogout']);
         Route::get('me',[AuthController::class,'getAuthenticatedUser']);
+        Route::post('change-password',[AuthController::class,'changePassword']);
         Route::post('logout-of-all-devices',[AuthController::class,'logoutOfAllDevices']);
     });
 });

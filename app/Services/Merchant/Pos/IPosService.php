@@ -2,6 +2,7 @@
 
 namespace App\Services\Merchant\Pos;
 
+use App\Entities\Responses\Pos\DashboardStats;
 use App\Models\User;
 use App\Utils\General\FilterOptions;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -45,5 +46,7 @@ interface IPosService
     public function getMyApprovals(User $user, FilterOptions $filterOptions): LengthAwarePaginator;
 
     public function approvalActionCall(User $user, array $payload);
+
+    public function getMobileAppDashboardStats(User $user) : DashboardStats;
 
 }

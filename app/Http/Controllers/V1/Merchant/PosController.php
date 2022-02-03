@@ -77,6 +77,11 @@ class PosController extends Controller
         return $this->successResponse($this->posService->getPos($id));
     }
 
+    public function getMobileAppDashboardStats(): Response
+    {
+        return $this->successResponse($this->posService->getMobileAppDashboardStats(\request()->user()));
+    }
+
     public function markAsBlocked(int $id): Response
     {
         $this->posService->markAsBlocked($id);
