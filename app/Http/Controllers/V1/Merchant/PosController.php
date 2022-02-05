@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Merchant\Pos\AssignToBranchRequest;
 use App\Http\Requests\Merchant\Pos\AssignToUserRequest;
 use App\Http\Requests\Merchant\Pos\CreatePosRequest;
+use App\Http\Requests\Merchant\Pos\PosApprovalActionRequest;
 use App\Http\Requests\Merchant\Pos\SendApprovalRequest;
 use App\Http\Requests\Merchant\Pos\UpdatePosRequest;
 use App\Services\Merchant\Pos\IPosService;
@@ -106,6 +107,12 @@ class PosController extends Controller
         return $this->noContent();
     }
 
+    public function approvalRequestActionCall(PosApprovalActionRequest $request): Response
+    {
+        $this->posService->approvalRequestActionCall($request->user(),$request->all());
+        return $this->noContent();
+    }
+
     public function sendApprovalRequest(SendApprovalRequest $request): Response
     {
         $this->posService->sendApprovalRequest($request->user(), $request->only(['phone', 'amount']), $request->header('Api-User-Agent'));
@@ -121,7 +128,6 @@ class PosController extends Controller
     {
         return $this->successResponse($this->posService->getMyApprovals(request()->user(),
             new FilterOptions(request()->query('page') ?? 1, request()->query('page-size') ?? 25, request()->query('search-query'))
-
         ));
     }
 }

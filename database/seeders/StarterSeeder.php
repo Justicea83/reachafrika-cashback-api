@@ -46,7 +46,7 @@ class StarterSeeder extends Seeder
             }
             $defaultUser = User::query()->create([
                // 'merchant_id' => $defaultMerchant->id,
-                'merchant_id' => 1,
+                'merchant_id' => $defaultMerchant->id,
                 'first_name' => 'Frank',
                 'last_name' => 'James',
                 'email' => 'james@gmail.com',

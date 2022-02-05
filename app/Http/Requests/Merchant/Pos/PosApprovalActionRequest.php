@@ -2,12 +2,14 @@
 
 namespace App\Http\Requests\Merchant\Pos;
 
-use App\Models\Merchant\Pos;
+use App\Models\Merchant\PosApproval;
 use App\Models\User;
+use App\Utils\PosApprovalUtils;
+use App\Utils\Status;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
-class SendApprovalRequest extends FormRequest
+class PosApprovalActionRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -27,8 +29,8 @@ class SendApprovalRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'phone' => 'required',
-            'amount' => 'required'
+            'action' => 'required',
+            'request_id' => 'required'
         ];
     }
 
@@ -37,17 +39,17 @@ class SendApprovalRequest extends FormRequest
         /** @var User $user */
         $user = $this->user();
         $validator->after(function (Validator $validator) use ($user) {
-            if (\App\Models\Core\User::query()->where('phone', $this->get('phone'))->count() < 1) {
-                $validator->errors()->add('user_id', 'no user associated with this phone');
+            /** @var PosApproval $posApproval */
+            $posApproval = PosApproval::query()->find($this->request->get('request_id'));
+
+            if ($posApproval == null || $user->pos->id != $posApproval->pos_id || $posApproval->status != Status::STATUS_PENDING) {
+                $validator->errors()->add('request_id', 'approval request not found');
             }
 
-            if (Pos::query()->where('merchant_id', $user->merchant_id)->where('user_id', $user->id)->count() < 1) {
-                $validator->errors()->add('user_id', 'this user is not assigned to a POS yet');
-            }
-
-            if ($this->get('amount') < 1) {
-                $validator->errors()->add('amount', "the minimum amount is {$user->merchant->country->currency_symbol} " . number_format(1,2));
+            if (!in_array($this->request->get('action'), PosApprovalUtils::ACTIONS)) {
+                $validator->errors()->add('action', 'action not found');
             }
         });
     }
+
 }
