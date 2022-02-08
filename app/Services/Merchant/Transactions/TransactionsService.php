@@ -21,30 +21,31 @@ class TransactionsService implements ITransactionsService
 
     public function getTransactions(User $user, TransactionsFilterOptions $filterOptions): LengthAwarePaginator
     {
-        // dd($filterOptions);
-        //dd(Carbon::parse($filterOptions->startDate)->toDateTimeString());
-        $pagedData = $this->transactionModel->query()->where('merchant_id', $user->merchant_id)
-            ->when($filterOptions->amountStart, function (Builder $query) use ($filterOptions) {
-                $query->where('amount', '>=', $filterOptions->amountStart);
-            })
-            ->when($filterOptions->amountEnd, function (Builder $query) use ($filterOptions) {
-                $query->where('amount', '<=', $filterOptions->amountEnd);
-            })
-            ->when($filterOptions->startDate, function (Builder $query) use ($filterOptions) {
-                $query->where('created_at', '>=', Carbon::parse($filterOptions->startDate)->unix());
-            })
-            ->when($filterOptions->endDate, function (Builder $query) use ($filterOptions) {
-                $checkDate = Carbon::parse($filterOptions->endDate);
-                if ($filterOptions->startDate == $filterOptions->endDate)
-                    $checkDate->addHours(24);
-                $query->where('created_at', '<=', $checkDate->unix());
-            })
-            ->when($filterOptions->statuses, function (Builder $query) use ($filterOptions) {
-                $statuses = explode(',', $filterOptions->statuses);
-                $query->whereIn('status', $statuses);
-            })
-            ->latest()
-            ->paginate($filterOptions->pageSize, ['*'], 'page', $filterOptions->page);
+        $pagedData =
+            $this->transactionModel->query()
+                ->where('merchant_id', $user->merchant_id)
+                ->where('pos_id', $user->pos->id)
+                ->when($filterOptions->amountStart, function (Builder $query) use ($filterOptions) {
+                    $query->where('amount', '>=', $filterOptions->amountStart);
+                })
+                ->when($filterOptions->amountEnd, function (Builder $query) use ($filterOptions) {
+                    $query->where('amount', '<=', $filterOptions->amountEnd);
+                })
+                ->when($filterOptions->startDate, function (Builder $query) use ($filterOptions) {
+                    $query->where('created_at', '>=', Carbon::parse($filterOptions->startDate)->unix());
+                })
+                ->when($filterOptions->endDate, function (Builder $query) use ($filterOptions) {
+                    $checkDate = Carbon::parse($filterOptions->endDate);
+                    if ($filterOptions->startDate == $filterOptions->endDate)
+                        $checkDate->addHours(24);
+                    $query->where('created_at', '<=', $checkDate->unix());
+                })
+                ->when($filterOptions->statuses, function (Builder $query) use ($filterOptions) {
+                    $statuses = explode(',', $filterOptions->statuses);
+                    $query->whereIn('status', $statuses);
+                })
+                ->latest()
+                ->paginate($filterOptions->pageSize, ['*'], 'page', $filterOptions->page);
 
         $pagedData->getCollection()->transform(function (Transaction $transaction) {
             return TransactionDto::map($transaction);
