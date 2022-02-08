@@ -2,9 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\Merchant\Branch;
 use App\Models\Merchant\Merchant;
-use App\Models\Category\MerchantCategory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class MerchantFactory extends Factory
