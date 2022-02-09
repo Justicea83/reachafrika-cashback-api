@@ -181,7 +181,7 @@ class PosService implements IPosService
         return $this->getPos($id);
     }
 
-        public function sendApprovalRequest(User $user, array $payload, string $userAgent)
+    public function sendApprovalRequest(User $user, array $payload, string $userAgent)
     {
         $pos = $user->pos;
         $country = $user->merchant->country;
