@@ -11,6 +11,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property mixed $recipient_name
  * @property mixed $recipient_phone
  * @property PaymentMode $paymentMode
+ * @property mixed $pos_id
+ * @property mixed $status
+ * @property mixed $reference
  */
 class PosApproval extends BaseModel
 {

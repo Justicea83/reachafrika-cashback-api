@@ -1,5 +1,9 @@
 <?php
 
+use App\Models\User;
+use App\Services\Merchant\Reports\IReportsService;
+use App\Services\Merchant\Reports\ReportsService;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,6 +17,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
+Route::get('/pos-summary-report', function () {
+
+    /** @var ReportsService $service */
+    $service = App::make(IReportsService::class);
+    return view('reports.merchants.pos.pos-summary-report', ['report' => $service->posSummaryReport(User::query()->find(1), '2021-01-01','2022-02-06')]);
+
 });

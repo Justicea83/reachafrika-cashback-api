@@ -10,9 +10,13 @@ use App\Models\Merchant\Merchant;
 use App\Models\Merchant\Pos;
 use App\Models\Merchant\PosApproval;
 use App\Models\User;
+use App\Utils\Core\BaseCoreService;
+use App\Utils\Core\Endpoints;
 use App\Utils\Finance\Merchant\TransactionUtils;
 use App\Utils\General\FilterOptions;
 use App\Utils\MerchantUtils;
+use App\Utils\PosApprovalUtils;
+use App\Utils\Status;
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Encoding\Encoding;
 use Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelHigh;
@@ -240,7 +244,9 @@ class PosService implements IPosService
 
     public function getMyApprovals(User $user, FilterOptions $filterOptions): LengthAwarePaginator
     {
-        $pagedData = $this->posApprovalModel->query()->where('pos_id', $user->pos->id)
+        $pagedData = $this->posApprovalModel->query()
+            ->where('pos_id', $user->pos->id)
+            ->where('status', Status::STATUS_PENDING)
             ->latest()
             ->paginate($filterOptions->pageSize, ['*'], 'page', $filterOptions->page);
 
@@ -250,10 +256,6 @@ class PosService implements IPosService
         return $pagedData;
     }
 
-    public function approvalActionCall(User $user, array $payload)
-    {
-        // TODO: Implement approvalActionCall() method.
-    }
 
     public function getMobileAppDashboardStats(User $user): DashboardStats
     {
@@ -301,5 +303,35 @@ class PosService implements IPosService
     private static function formatAmountWithCurrency(string $currency, float $amount): string
     {
         return sprintf("%s %s", $currency, number_format($amount, 2));
+    }
+
+
+    /**
+     * @throws Exception
+     */
+    public function approvalRequestActionCall(User $user, array $payload)
+    {
+        ['action' => $action, 'request_id' => $requestId] = $payload;
+
+        /** @var PosApproval $posApproval */
+        $posApproval = $this->posApprovalModel->query()->find($requestId);
+
+        $response = BaseCoreService::makeCall(Endpoints::getEndpointForAction(Endpoints::POS_APPROVAL_ACTION_CALL_ENDPOINT), [
+            'reference' => $posApproval->reference,
+            'action' => $action
+        ]);
+
+        if ($response->successful()) {
+            switch ($action) {
+                case PosApprovalUtils::ACTION_APPROVE:
+                    $posApproval->status = Status::STATUS_COMPLETED;
+                    break;
+                case PosApprovalUtils::ACTION_DENY:
+                    $posApproval->status = Status::STATUS_REJECTED;
+                    break;
+            }
+            $posApproval->save();
+        }
+        //TODO add a try count to the model so you can reject after a specific number of tries
     }
 }

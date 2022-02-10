@@ -6,8 +6,7 @@ use App\Models\BaseModel;
 use App\Models\Merchant\Branch;
 use App\Models\Merchant\Pos;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Database\Factories\TransactionFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -43,5 +42,10 @@ class Transaction extends BaseModel
     public function cashier(): BelongsTo
     {
         return $this->belongsTo(User::class,'created_by');
+    }
+
+    protected static function newFactory(): TransactionFactory
+    {
+        return TransactionFactory::new();
     }
 }

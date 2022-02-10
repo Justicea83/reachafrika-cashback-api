@@ -28,6 +28,7 @@ Route::prefix('v1/pos')->group(function () {
         Route::prefix('approval-requests')->group(function () {
             Route::post('', [PosController::class, 'sendApprovalRequest']);
             Route::get('me', [PosController::class, 'getMyApprovals']);
+            Route::post('me/action', [PosController::class, 'approvalRequestActionCall']);
         });
         //pos routes
     });

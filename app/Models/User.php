@@ -4,10 +4,13 @@ namespace App\Models;
 
 use App\Models\Merchant\Merchant;
 use App\Models\Merchant\Pos;
+use App\Models\Notifications\FcmDeviceGroup;
+use App\Models\Notifications\FcmToken;
 use App\Traits\UnixTimestampsFormat;
 use Illuminate\Auth\Passwords\CanResetPassword as ResetPassword;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -31,7 +34,9 @@ use Spatie\Permission\Traits\HasRoles;
  * @property Pos $pos
  * @property Merchant $merchant
  * @property string $fullName
+ * @property FcmDeviceGroup $deviceGroup
  */
+
 class User extends Authenticatable
 {
     use HasFactory, Notifiable, HasApiTokens, HasRoles, ResetPassword, SoftDeletes,UnixTimestampsFormat;
@@ -64,6 +69,16 @@ class User extends Authenticatable
     public function getFullNameAttribute(): string
     {
         return $this->first_name . ' ' . $this->last_name;
+    }
+
+    public function notificationTokens(): HasMany
+    {
+        return $this->hasMany(FcmToken::class);
+    }
+
+    public function deviceGroup(): HasOne
+    {
+        return $this->hasOne(FcmDeviceGroup::class);
     }
 
 }

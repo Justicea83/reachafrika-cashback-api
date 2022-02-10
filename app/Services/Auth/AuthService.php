@@ -115,7 +115,8 @@ class AuthService implements IAuthService
             'email_verified' => $user->email_verified_at != null,
             'phone_verified' => $user->phone_verified_at != null,
             'joined' => $user->created_at,
-            'merchant_name' => $user->merchant->name
+            'merchant_name' => $user->merchant->name,
+            'id'=> $user->id
         ];
     }
 
