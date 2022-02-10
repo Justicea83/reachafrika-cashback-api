@@ -5,6 +5,7 @@ use App\Providers\CollectionServiceProvider;
 use App\Providers\CoreServiceProvider;
 use App\Providers\MerchantServiceProvider;
 use App\Providers\NotificationServiceProvider;
+use App\Providers\PromoServiceProvider;
 use App\Providers\SettingsServiceProvider;
 use App\Providers\UserManagementServiceProvider;
 
@@ -188,7 +189,8 @@ return [
         CollectionServiceProvider::class,
         SettingsServiceProvider::class,
         CoreServiceProvider::class,
-        NotificationServiceProvider::class
+        NotificationServiceProvider::class,
+        PromoServiceProvider::class
     ],
 
     /*
