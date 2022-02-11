@@ -7,6 +7,7 @@ use App\Models\Category\MerchantCategory;
 use App\Models\Finance\Account;
 use App\Models\Misc\Country;
 use App\Models\User;
+use App\Utils\Finance\Merchant\Account\AccountUtils;
 use ArrayAccess;
 use Database\Factories\MerchantFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -29,6 +30,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property array|ArrayAccess|mixed about
  * @property false|mixed|string avatar
  * @property Country $country
+ * @property Account $creditAccount
  */
 class Merchant extends BaseModel
 {
@@ -74,5 +76,10 @@ class Merchant extends BaseModel
     public function accounts(): HasMany
     {
         return $this->hasMany(Account::class);
+    }
+
+    public function creditAccount(): HasOne
+    {
+        return $this->hasOne(Account::class)->where('type', AccountUtils::ACCOUNT_TYPE_CREDIT);
     }
 }

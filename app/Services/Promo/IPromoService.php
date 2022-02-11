@@ -12,6 +12,8 @@ interface IPromoService
 
     public function getTime(): Collection;
 
+    public function getFrequencies(): Collection;
+
     public function createSchedule(User $user, array $payload): ScheduleDto;
 
     public function getSchedules(User $user): Collection;

@@ -9,6 +9,7 @@ class Endpoints
     const PAY_ENDPOINTS = self::CASHBACK_ENDPOINTS . '/pay';
     const TOKEN_ENDPOINT = 'oauth/token';
     const POS_APPROVAL_ACTION_CALL_ENDPOINT = self::PAY_ENDPOINTS . '/pos-approval-action-call';
+    const LISTS_ENDPOINT = self::V2 . '/lists/';
 
     public static function getEndpointForAction(string $endpoint): string
     {

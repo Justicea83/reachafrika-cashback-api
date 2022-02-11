@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Promo\PromoFrequency;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -25,5 +26,6 @@ class DatabaseSeeder extends Seeder
        // $this->call(MerchantsTableSeeder::class);
         $this->call(PromoDaysTableSeeder::class);
         $this->call(PromoTimesTableSeeder::class);
+        $this->call(PromoFrequencyTableSeeder::class);
     }
 }

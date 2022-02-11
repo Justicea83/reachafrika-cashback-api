@@ -49,7 +49,7 @@ class BaseCoreService
      * @throws RequestException
      * @throws Exception
      */
-    public static function makeCall(string $endpoint, array $payload = [], string $method = ApiCallUtils::METHOD_POST) : Response
+    public static function makeCall(string $endpoint, string $method = ApiCallUtils::METHOD_GET, array $payload = []): Response
     {
         Log::info("================================ PREPARE PAYLOAD- $endpoint ============================================");
         Log::info(get_class(), [$endpoint => $payload]);
@@ -60,7 +60,7 @@ class BaseCoreService
         } catch (RequestException $e) {
             if ($e->getCode() == ResponseAlias::HTTP_UNAUTHORIZED) {
                 self::getAccessToken();
-                return self::makeCall($endpoint, $payload, $method);
+                return self::makeCall($endpoint, $method, $payload);
             }
             Log::error(get_class(), ['message' => json_decode($e->response->body(), true)]);
             throw $e;
