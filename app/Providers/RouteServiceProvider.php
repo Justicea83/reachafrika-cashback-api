@@ -48,6 +48,10 @@ class RouteServiceProvider extends ServiceProvider
                     require base_path('routes/api/settings.php');
                     require base_path('routes/api/notifications.php');
                     require base_path('routes/api/category.php');
+
+                    //finance
+                    require base_path('routes/api/finance/accounts.php');
+                    //merchants
                     require base_path('routes/api/merchant/merchant.php');
                     require base_path('routes/api/merchant/transactions.php');
                     require base_path('routes/api/merchant/reports.php');

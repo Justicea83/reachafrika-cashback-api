@@ -3,7 +3,11 @@
 namespace App\Models\Promo\Campaign;
 
 use App\Models\BaseModel;
+use App\Models\Promo\PromoFrequency;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Ramsey\Collection\Collection;
 
 /**
  * @property mixed $merchant_id
@@ -26,6 +30,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property mixed $lat
  * @property float|int|mixed $impressions
  * @property float|int|mixed $impressions_track
+ * @property mixed $status
+ * @property mixed $delete_requested_at
+ * @property mixed $blocked
+ * @property PromoFrequency $frequency
+ * @property Collection $schedules
  */
 class PromoCampaign extends BaseModel
 {
@@ -42,5 +51,10 @@ class PromoCampaign extends BaseModel
     public function schedules(): HasMany
     {
         return $this->hasMany(PromoCampaignSchedule::class);
+    }
+
+    public function frequency(): BelongsTo
+    {
+        return $this->belongsTo(PromoFrequency::class, 'promo_frequency_id');
     }
 }

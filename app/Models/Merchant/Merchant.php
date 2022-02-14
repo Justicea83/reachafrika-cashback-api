@@ -31,6 +31,9 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property false|mixed|string avatar
  * @property Country $country
  * @property Account $creditAccount
+ * @property Account $normalAccount
+ * @property Account $rewardAccount
+ * @property Account $escrowAccount
  */
 class Merchant extends BaseModel
 {
@@ -68,6 +71,9 @@ class Merchant extends BaseModel
         return $this->belongsTo(Country::class);
     }
 
+    /**
+     * @deprecated
+     * */
     public function account(): HasOne
     {
         return $this->hasOne(Account::class);
@@ -81,5 +87,20 @@ class Merchant extends BaseModel
     public function creditAccount(): HasOne
     {
         return $this->hasOne(Account::class)->where('type', AccountUtils::ACCOUNT_TYPE_CREDIT);
+    }
+
+    public function normalAccount(): HasOne
+    {
+        return $this->hasOne(Account::class)->where('type', AccountUtils::ACCOUNT_TYPE_NORMAL);
+    }
+
+    public function rewardAccount(): HasOne
+    {
+        return $this->hasOne(Account::class)->where('type', AccountUtils::ACCOUNT_TYPE_REWARD);
+    }
+
+    public function escrowAccount(): HasOne
+    {
+        return $this->hasOne(Account::class)->where('type', AccountUtils::ACCOUNT_TYPE_ESCROW);
     }
 }

@@ -7,6 +7,7 @@ use App\Http\Requests\Promo\CreatePromoCampaignRequest;
 use App\Http\Requests\Promo\CreatePromoScheduleRequest;
 use App\Services\Promo\Campaign\IPromoCampaignService;
 use App\Services\Promo\IPromoService;
+use App\Utils\General\FilterOptions;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -66,12 +67,19 @@ class PromosController extends Controller
     //campaigns
     public function createPromoCampaign(CreatePromoCampaignRequest $request): JsonResponse
     {
-        return $this->successResponse($this->campaignService->createCampaign($request));
+        return $this->successResponse($this->campaignService->createCampaign($request), Response::HTTP_CREATED);
     }
 
     public function getPromoCampaigns(): JsonResponse
     {
-        return $this->successResponse($this->campaignService->getCampaigns(request()->user()));
+        $filters = new FilterOptions(request()->query('page') ?? 1, request()->query('page-size') ?? 25, request()->query('search-query'));
+
+        return $this->successResponse(
+            $this->campaignService->getCampaigns(
+                request()->user(),
+                $filters
+            )
+        );
     }
 
     public function deletePromoCampaign(int $id): Response

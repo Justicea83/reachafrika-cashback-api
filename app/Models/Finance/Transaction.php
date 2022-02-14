@@ -10,22 +10,25 @@ use Database\Factories\TransactionFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * @property mixed $id
- * @property mixed $amount
- * @property mixed $currency_symbol
- * @property mixed $transaction
- * @property mixed $tax_percentage
- * @property mixed $given_discount
+ * @property mixed|string $transaction
+ * @property float|mixed $given_discount
  * @property mixed $balance_before
- * @property mixed $balance_after
- * @property mixed $currency
- * @property mixed $status
- * @property mixed $reference
- * @property mixed $created_at
- * @property Branch $branch
- * @property Pos $pos
- * @property User $cashier
+ * @property mixed|string $group_reference
+ * @property mixed|string $status
  * @property mixed $user_phone
+ * @property mixed|string $platform
+ * @property mixed $merchant_id
+ * @property mixed $branch_id
+ * @property mixed $pos_id
+ * @property mixed|string $reference
+ * @property mixed|string $transaction_type
+ * @property mixed $amount
+ * @property mixed $currency
+ * @property mixed $currency_symbol
+ * @property mixed $created_by
+ * @property float|mixed $balance_after
+ * @property int|mixed $payment_mode_id
+ * @property mixed $account
  */
 class Transaction extends BaseModel
 {
