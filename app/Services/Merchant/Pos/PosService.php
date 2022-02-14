@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Utils\Core\BaseCoreService;
 use App\Utils\Core\Endpoints;
 use App\Utils\Finance\Merchant\TransactionUtils;
+use App\Utils\General\ApiCallUtils;
 use App\Utils\General\FilterOptions;
 use App\Utils\MerchantUtils;
 use App\Utils\PosApprovalUtils;
@@ -316,7 +317,7 @@ class PosService implements IPosService
         /** @var PosApproval $posApproval */
         $posApproval = $this->posApprovalModel->query()->find($requestId);
 
-        $response = BaseCoreService::makeCall(Endpoints::getEndpointForAction(Endpoints::POS_APPROVAL_ACTION_CALL_ENDPOINT), [
+        $response = BaseCoreService::makeCall(Endpoints::getEndpointForAction(Endpoints::POS_APPROVAL_ACTION_CALL_ENDPOINT), ApiCallUtils::METHOD_POST, [
             'reference' => $posApproval->reference,
             'action' => $action
         ]);

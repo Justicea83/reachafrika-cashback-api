@@ -5,6 +5,7 @@ use App\Providers\CollectionServiceProvider;
 use App\Providers\CoreServiceProvider;
 use App\Providers\MerchantServiceProvider;
 use App\Providers\NotificationServiceProvider;
+use App\Providers\PromoServiceProvider;
 use App\Providers\SettingsServiceProvider;
 use App\Providers\UserManagementServiceProvider;
 
@@ -169,7 +170,8 @@ return [
         Illuminate\Translation\TranslationServiceProvider::class,
         Illuminate\Validation\ValidationServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
-
+        ProtoneMedia\LaravelFFMpeg\Support\ServiceProvider::class,
+        Intervention\Image\ImageServiceProvider::class,
         /*
          * Package Service Providers...
          */
@@ -188,7 +190,8 @@ return [
         CollectionServiceProvider::class,
         SettingsServiceProvider::class,
         CoreServiceProvider::class,
-        NotificationServiceProvider::class
+        NotificationServiceProvider::class,
+        PromoServiceProvider::class
     ],
 
     /*
@@ -242,7 +245,8 @@ return [
         'URL' => Illuminate\Support\Facades\URL::class,
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
-
+        'FFMpeg' => ProtoneMedia\LaravelFFMpeg\Support\FFMpeg::class,
+        'Image' => Intervention\Image\Facades\Image::class,
     ],
 
 ];

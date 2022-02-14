@@ -36,7 +36,7 @@ class CreateTransactionsTable extends Migration
             $table->string('user_phone')->nullable()->comment('the user who effect this transactions phone');
             $table->string('platform')->nullable()->comment('the app/platform from which this transaction occurred');
             $table->string('payment_mode')->default('reachafrika_core_app')->comment('from which service was the payment made');
-            $table->foreignId('payment_mode_id')->comment('payment medium that effected this transaction')->constrained();
+            $table->foreignId('payment_mode_id')->nullable()->comment('payment medium that effected this transaction')->constrained();
             $table->foreignId('pos_id')->nullable()->constrained();
             $table->foreignId('branch_id')->nullable()->constrained();
             $table->foreignId('merchant_id')->constrained();
