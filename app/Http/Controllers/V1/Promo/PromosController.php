@@ -5,6 +5,8 @@ namespace App\Http\Controllers\V1\Promo;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Promo\CreatePromoCampaignRequest;
 use App\Http\Requests\Promo\CreatePromoScheduleRequest;
+use App\Http\Requests\Promo\GetImpressionsByBudgetRequest;
+use App\Http\Requests\Promo\GetTargetCountRequest;
 use App\Services\Promo\Campaign\IPromoCampaignService;
 use App\Services\Promo\IPromoService;
 use App\Utils\General\FilterOptions;
@@ -85,6 +87,32 @@ class PromosController extends Controller
     public function deletePromoCampaign(int $id): Response
     {
         $this->campaignService->deleteCampaign(request()->user(), $id);
+        return $this->noContent();
+    }
+
+    public function getPromoCampaign(int $id): Response
+    {
+        return $this->successResponse($this->campaignService->getCampaign(request()->user(), $id));
+    }
+
+    public function getPotentialCount(): Response
+    {
+        return $this->successResponse($this->campaignService->getPotentialCount(request()->user()));
+    }
+
+    public function getTargetCount(GetTargetCountRequest $request): Response
+    {
+        return $this->successResponse($this->campaignService->getTargetCount($request));
+    }
+
+    public function getImpressionsByBudget(GetImpressionsByBudgetRequest $request): Response
+    {
+        return $this->successResponse($this->campaignService->getImpressionsByBudget(request()->user(), $request['budget']));
+    }
+
+    public function pausePromoCampaign(int $id): Response
+    {
+        $this->campaignService->pauseCampaign(request()->user(), $id);
         return $this->noContent();
     }
 }

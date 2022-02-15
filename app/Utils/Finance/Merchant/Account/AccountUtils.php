@@ -54,7 +54,8 @@ class AccountUtils
             Status::STATUS_COMPLETED,
             $amount,
             $groupReference,
-            MiscUtils::getToken(16)
+            MiscUtils::getToken(16),
+            $user->pos
         );
 
         $toAccountTransaction = MerchantUtils::createTransaction(
@@ -65,7 +66,8 @@ class AccountUtils
             Status::STATUS_COMPLETED,
             $amount,
             $groupReference,
-            MiscUtils::getToken(16)
+            MiscUtils::getToken(16),
+            $user->pos
         );
 
         $fromAccount->balance -= $amount;

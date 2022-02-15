@@ -4,12 +4,15 @@ namespace App\Services\Promo\Campaign;
 
 use App\Dtos\Promo\PromoCampaignDto;
 use App\Http\Requests\Promo\CreatePromoCampaignRequest;
+use App\Http\Requests\Promo\GetTargetCountRequest;
 use App\Models\Promo\Campaign\PromoCampaign;
 use App\Models\User;
 use App\Utils\Finance\Merchant\Account\AccountUtils;
 use App\Utils\General\FilterOptions;
 use App\Utils\General\MiscUtils;
 use App\Utils\Promo\PromoCampaignUtils;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -155,11 +158,128 @@ class PromoCampaignService implements IPromoCampaignService
         });
 
         return $pagedData;
-        // TODO: Implement getCampaigns() method.
     }
 
     public function deleteCampaign(User $user, int $id)
     {
-        // TODO: Implement deleteCampaign() method.
+        /** @var PromoCampaign $campaign */
+        $campaign = $this->promoCampaignModel->query()
+            ->where('merchant_id', $user->merchant_id)
+            ->where('id', $id)
+            ->first();
+        if (is_null($campaign)) return;
+
+        $campaign->blocked = true;
+        $campaign->delete_requested_at = now()->unix();
+
+        $campaign->save();
+    }
+
+
+    public function pauseCampaign(User $user, int $id)
+    {
+        /** @var PromoCampaign $campaign */
+        $campaign = $this->promoCampaignModel->query()
+            ->where('merchant_id', $user->merchant_id)
+            ->where('id', $id)
+            ->first();
+        if (is_null($campaign)) return;
+        $campaign->blocked = !$campaign->blocked;
+        $campaign->save();
+    }
+
+    public function getCampaign(User $user, int $id): PromoCampaignDto
+    {
+        /** @var PromoCampaign $campaign */
+        $campaign = $this->promoCampaignModel->query()
+            ->where('merchant_id', $user->merchant_id)
+            ->where('id', $id)
+            ->first();
+
+        if (is_null($campaign)) throw new ModelNotFoundException("we cannot find campaign with id ", $id);
+
+        return PromoCampaignDto::map($campaign);
+    }
+
+    public function getImpressionsByBudget(User $user, float $budget): int
+    {
+        return floor($budget / 2);
+    }
+
+    public function getTargetCount(GetTargetCountRequest $request): int
+    {
+        /** @var User $user */
+        $user = $request->user();
+
+        $merchantProfile = $this->getMerchantProfileDetails($user);
+
+        if ($merchantProfile == 0) return $merchantProfile;
+
+        $professions = $request->professions ?? null;
+        $interests = $request->interests ?? null;
+        $gender = strtolower($request->gender) == 'all' || $request->gender == 'null' ? null : strtolower($request->gender);
+        $maritalStatus = strtolower($request->marital_status) == 'all' || $request->marital_status == 'null' ? null : strtolower($request->marital_status);
+        $religion = strtolower($request->religion) == 'all' || $request->religion == 'null' ? null : strtolower($request->religion);
+        $minAge = $request->min_age == 'null' || empty($request->min_age) ? null : $request->min_age;
+        $maxAge = $request->max_age == 'null' ? null : $request->max_age;
+        $education = strtolower($request->education) == 'all' || $request->education == 'null' ? null : strtolower($request->education);
+
+        return $this->getBuilderForMerchantPotentialBuilder($merchantProfile)
+            ->join('users', 'user_profiles.user_id', 'users.id')
+            ->when($gender, function (Builder $query, $gender) {
+                return $query->where('users.gender', strtolower($gender));
+            })
+            ->when($religion, function (Builder $query, $religion) {
+                return $query->where('users.religion', strtolower($religion));
+            })
+            ->when($maritalStatus, function (Builder $query, $maritalStatus) {
+                return $query->where('users.marital_status', strtolower($maritalStatus));
+            })
+            ->when($minAge, function (Builder $query, $minAge) {
+                return $query->whereRaw("TIMESTAMPDIFF(YEAR, DATE(dob), curdate()) >= ?", $minAge);
+            })
+            ->when($maxAge, function (Builder $query, $maxAge) {
+                return $query->whereRaw("TIMESTAMPDIFF(YEAR, DATE(dob), curdate()) <= ?", $maxAge);
+            })
+            ->when($education, function (Builder $query, $education) {
+                return $query->whereRaw('LOWER(users.education) = ?',$education);
+            })
+            ->when($professions, function (Builder $query, $professions) {
+                return $query->join('user_professions','users.id','user_professions.user_id')->whereIn('user_professions.profession_id',$professions);
+            })
+            ->when($interests, function (Builder $query, $interests) {
+                return $query->join('user_interests','users.id','user_interests.user_id')->whereIn('user_interests.interest_id',$interests);
+            })
+            ->count();
+    }
+
+    private function getMerchantProfileDetails(User $user)
+    {
+        $profileDetails = DB::connection('reachafrika_core')->table('countries')
+            ->where('currency', $user->merchant->country->currency)
+            ->join('profiles', 'profiles.avatar', 'countries.id')
+            ->select('profiles.id as merchant_profile')
+            ->first();
+
+        return $profileDetails->merchant_profile ?? 0;
+    }
+
+    public function getPotentialCount(User $user): int
+    {
+        $merchantProfile = $this->getMerchantProfileDetails($user);
+
+        if ($merchantProfile == 0) return $merchantProfile;
+
+        return $this->getBuilderForMerchantPotentialBuilder($merchantProfile)
+            // ->where('user_profiles.active',true)
+            ->count();
+    }
+
+    public function getBuilderForMerchantPotentialBuilder(int $merchantProfile): Builder
+    {
+        return DB::connection('reachafrika_core')->table('roles')->where('name', 'user')
+            ->join('role_user', 'role_user.role_id', 'roles.id')
+            ->join('user_profiles', 'user_profiles.user_id', 'role_user.user_id')
+            ->where('user_profiles.profile_id', $merchantProfile);
     }
 }
