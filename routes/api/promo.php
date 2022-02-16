@@ -28,4 +28,5 @@ Route::prefix('v1/promos')->group(function () {
             Route::get('{id}/play', [PromosController::class, 'pausePromoCampaign'])->whereNumber('id');
         });
     });
+    Route::get('download/{path}', [PromosController::class, 'downloadBlob'])->name('promo.campaigns.download')->where('path', '(.*)');
 });

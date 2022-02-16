@@ -12,6 +12,7 @@ use App\Services\Promo\IPromoService;
 use App\Utils\General\FilterOptions;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PromosController extends Controller
 {
@@ -108,6 +109,11 @@ class PromosController extends Controller
     public function getImpressionsByBudget(GetImpressionsByBudgetRequest $request): Response
     {
         return $this->successResponse($this->campaignService->getImpressionsByBudget(request()->user(), $request['budget']));
+    }
+
+    public function downloadBlob(string $path): StreamedResponse
+    {
+        return $this->campaignService->downloadBlob($path);
     }
 
     public function pausePromoCampaign(int $id): Response

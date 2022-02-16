@@ -16,6 +16,7 @@ use Ramsey\Collection\Collection;
  * @property int|mixed $start
  * @property int|mixed $end
  * @property mixed $type
+ * @property mixed $duration
  * @property mixed $title
  * @property mixed $budget
  * @property mixed $description

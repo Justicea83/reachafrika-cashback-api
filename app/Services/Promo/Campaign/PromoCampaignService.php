@@ -11,6 +11,8 @@ use App\Utils\Finance\Merchant\Account\AccountUtils;
 use App\Utils\General\FilterOptions;
 use App\Utils\General\MiscUtils;
 use App\Utils\Promo\PromoCampaignUtils;
+use Aws\CloudFront\CloudFrontClient;
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -20,6 +22,7 @@ use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Facades\Image;
 use InvalidArgumentException;
 use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 
 class PromoCampaignService implements IPromoCampaignService
@@ -67,12 +70,18 @@ class PromoCampaignService implements IPromoCampaignService
                 case PromoCampaignUtils::CAMPAIGN_TYPE_VIDEO:
                     $thumbnailPath = sprintf("thumbnails/%s.png", MiscUtils::getToken(60));
                     $campaign->thumbnail = $thumbnailPath;
-                    FFMpeg::fromDisk('campaigns')
-                        ->open($request->file('media'))
-                        ->getFrameFromSeconds(10)
+                    $media = FFMpeg::fromDisk('campaigns')
+                        ->open($request->file('media'));
+                    $duration = $media->getDurationInSeconds();
+
+
+                    $campaign->duration = $duration;
+
+                    $media->getFrameFromSeconds(10)
                         ->export()
                         ->toDisk('thumbnails')
                         ->save($thumbnailPath);
+
                     break;
                 default:
                     throw new InvalidArgumentException('media type not found');
@@ -242,13 +251,13 @@ class PromoCampaignService implements IPromoCampaignService
                 return $query->whereRaw("TIMESTAMPDIFF(YEAR, DATE(dob), curdate()) <= ?", $maxAge);
             })
             ->when($education, function (Builder $query, $education) {
-                return $query->whereRaw('LOWER(users.education) = ?',$education);
+                return $query->whereRaw('LOWER(users.education) = ?', $education);
             })
             ->when($professions, function (Builder $query, $professions) {
-                return $query->join('user_professions','users.id','user_professions.user_id')->whereIn('user_professions.profession_id',$professions);
+                return $query->join('user_professions', 'users.id', 'user_professions.user_id')->whereIn('user_professions.profession_id', $professions);
             })
             ->when($interests, function (Builder $query, $interests) {
-                return $query->join('user_interests','users.id','user_interests.user_id')->whereIn('user_interests.interest_id',$interests);
+                return $query->join('user_interests', 'users.id', 'user_interests.user_id')->whereIn('user_interests.interest_id', $interests);
             })
             ->count();
     }
@@ -281,5 +290,29 @@ class PromoCampaignService implements IPromoCampaignService
             ->join('role_user', 'role_user.role_id', 'roles.id')
             ->join('user_profiles', 'user_profiles.user_id', 'role_user.user_id')
             ->where('user_profiles.profile_id', $merchantProfile);
+    }
+
+    public function downloadBlob(string $path): StreamedResponse
+    {
+        return Storage::disk('s3')->response($path);
+    }
+
+    /**
+     * @throws FileNotFoundException
+     */
+    public function streamUrl(string $path, ?int $expiry = null): string
+    {
+        if(is_null($expiry)) $expiry = now()->addMinutes(200)->unix();
+        $cloud = new CloudFrontClient([
+            'region' => 'us-east-1',
+            'version' => 'latest'
+        ]);
+
+        return $cloud->getSignedUrl([
+            'url' => config('cloudfront.url') . '/' . $path,
+            'expires' => $expiry,
+            'key_pair_id' => config('cloudfront.key_pair_id'),
+            'private_key' => Storage::disk('files')->get('cloudfront.pem'),
+        ]);
     }
 }

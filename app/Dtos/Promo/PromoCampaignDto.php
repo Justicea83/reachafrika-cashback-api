@@ -5,12 +5,16 @@ namespace App\Dtos\Promo;
 use App\Dtos\BaseDto;
 use App\Models\Promo\Campaign\PromoCampaign;
 use App\Models\Promo\Campaign\PromoCampaignSchedule;
+use App\Services\Promo\Campaign\IPromoCampaignService;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\App;
 
 class PromoCampaignDto extends BaseDto
 {
     public string $media;
+    public string $media_stream;
     public int $impressions;
+    public string $duration;
     public ?float $lat;
     public ?float $lng;
     public ?int $min_age;
@@ -26,6 +30,7 @@ class PromoCampaignDto extends BaseDto
     public string $start;
     public string $end;
     public string $thumbnail;
+    public string $thumbnail_stream;
     public bool $blocked;
     public ?string $delete_requested_at;
     public ?array $frequency;
@@ -39,6 +44,10 @@ class PromoCampaignDto extends BaseDto
      */
     public function mapFromModel($model): PromoCampaignDto
     {
+        /** @var IPromoCampaignService $promoCampaignService */
+        $promoCampaignService = App::make(IPromoCampaignService::class);
+
+
         return self::instance()
             ->setId($model->id)
             ->setLat($model->lat)
@@ -52,9 +61,14 @@ class PromoCampaignDto extends BaseDto
             ])
             ->setSchedules($model->schedules->map(fn(PromoCampaignSchedule $item) => ScheduleDto::map($item->schedule))->toArray())
             //TODO format the thumbnail
-            ->setThumbnail($model->thumbnail)
-            ->setMedia($model->media)
+            ->setThumbnail(route('promo.campaigns.download', ['path' => $model->thumbnail]))
+            ->setThumbnailStream($promoCampaignService->streamUrl($model->thumbnail, now()->addSeconds($model->duration + 50)->unix()))
+            ->setMediaStream($promoCampaignService->streamUrl($model->media, now()->addSeconds($model->duration + 50)->unix()))
+            ->setMedia(route('promo.campaigns.download', ['path' => $model->media]))
             ->setType($model->type)
+            ->setDuration(
+                $model->duration
+            )
             ->setCallbackUrl($model->callback_url)
             ->setMinAge($model->min_age)
             ->setMaxAge($model->max_age)
@@ -303,7 +317,45 @@ class PromoCampaignDto extends BaseDto
         $this->schedules = $schedules;
         return $this;
     }
+
+    /**
+     * @param string $media_stream
+     * @return PromoCampaignDto
+     */
+    public function setMediaStream(string $media_stream): PromoCampaignDto
+    {
+        $this->media_stream = $media_stream;
+        return $this;
+    }
+
+    /**
+     * @param string $thumbnail_stream
+     * @return PromoCampaignDto
+     */
+    public function setThumbnailStream(string $thumbnail_stream): PromoCampaignDto
+    {
+        $this->thumbnail_stream = $thumbnail_stream;
+        return $this;
+    }
+
     //</editor-fold>
 
-
+    /**
+     * @param string $duration
+     * @return PromoCampaignDto
+     */
+    public function setDuration(string $duration): PromoCampaignDto
+    {
+        if ($duration >= 60) {
+            $minutes = floor($duration / 60);
+            $seconds = $duration - (60 * $minutes);
+            if ($seconds < 10) {
+                $seconds = '0' . $seconds;
+            }
+            $this->duration = $minutes . ':' . $seconds;
+        } else {
+            $this->duration = '0:' . $duration;
+        }
+        return $this;
+    }
 }
