@@ -25,13 +25,14 @@ class PromoCampaignFactory extends Factory
      */
     public function definition()
     {
+        $faker = $this->withFaker();
         return [
             'start' => Carbon::now()->addWeek(rand(1, 3))->unix(),
             'end'   => Carbon::now()->now()->addWeek(rand(4, 7))->unix(),
-            'type'  => $this->faker->randomElement(['flyer', 'video']),
-            'title' => $this->faker->title(),
+            'type'  => $faker->randomElement(['flyer', 'video']),
+            'title' => $faker->title(),
             'merchant_id'   => Merchant::inRandomOrder()->get(['id'])->first()->id,
-            'budget'    => $this->faker->randomFloat(2, 100, 1000),
+            'budget'    => $faker->randomFloat(2, 100, 1000),
             'impressions' => rand(0, 5),
             'impressions_track' => 0,
             'media' => 'gL4dGa6E0G9YRH1zz1gdxq71zy2eai0PwMJKGLlF.mp4',
