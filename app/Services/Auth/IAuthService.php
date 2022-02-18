@@ -24,5 +24,5 @@ interface IAuthService
 
     public function resetPassword(array $payload): bool;
 
-    public function changePassword(User $user, $password);
+    public function changePassword(User $user,string $password, bool $logout = false);
 }

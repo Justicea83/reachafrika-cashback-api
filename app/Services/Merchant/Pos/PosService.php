@@ -2,12 +2,32 @@
 
 namespace App\Services\Merchant\Pos;
 
+use App\Dtos\Pos\PosApprovalDto;
+use App\Entities\Responses\Pos\DashboardStats;
+use App\Models\Finance\Transaction;
 use App\Models\Merchant\ApprovalRequest;
+use App\Models\Merchant\Merchant;
 use App\Models\Merchant\Pos;
+use App\Models\Merchant\PosApproval;
 use App\Models\User;
+use App\Utils\Core\BaseCoreService;
+use App\Utils\Core\Endpoints;
+use App\Utils\Finance\Merchant\TransactionUtils;
+use App\Utils\General\ApiCallUtils;
+use App\Utils\General\FilterOptions;
 use App\Utils\MerchantUtils;
+use App\Utils\PosApprovalUtils;
+use App\Utils\Status;
+use Endroid\QrCode\Builder\Builder;
+use Endroid\QrCode\Encoding\Encoding;
+use Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelHigh;
+use Endroid\QrCode\Label\Alignment\LabelAlignmentCenter;
+use Endroid\QrCode\Label\Font\NotoSans;
+use Endroid\QrCode\RoundBlockSizeMode\RoundBlockSizeModeMargin;
+use Endroid\QrCode\Writer\PngWriter;
 use Exception;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
@@ -16,14 +36,20 @@ class PosService implements IPosService
 {
     private Pos $posModel;
     private ApprovalRequest $approvalRequestModel;
+    private PosApproval $posApprovalModel;
+    private Transaction $transactionModel;
 
     function __construct(
         Pos             $posModel,
-        ApprovalRequest $approvalRequestModel
+        ApprovalRequest $approvalRequestModel,
+        PosApproval     $posApprovalModel,
+        Transaction     $transactionModel
     )
     {
         $this->posModel = $posModel;
         $this->approvalRequestModel = $approvalRequestModel;
+        $this->posApprovalModel = $posApprovalModel;
+        $this->transactionModel = $transactionModel;
     }
 
     /**
@@ -116,7 +142,7 @@ class PosService implements IPosService
         $this->posModel->query()->find($id)->delete();
     }
 
-    public function getPos(int $posId): Model
+    public function getPos(int $posId): ?Model
     {
         return $this->posModel->query()->with(['user', 'branch'])->find($posId);
     }
@@ -170,13 +196,143 @@ class PosService implements IPosService
             'currency' => $country->currency,
             'currency_symbol' => $country->currency_symbol,
             'created_by' => $user->id,
-            'extra_info'=> json_encode(
+            'extra_info' => json_encode(
                 [
                     'platform' => $userAgent
                 ]
             )
         ]);
+    }
 
-        //TODO send broadcasts here
+    public function getQrCode(User $user, int $posId): string
+    {
+        /** @var Pos $pos */
+        $pos = $this->posModel->query()->find($posId);
+        if (is_null($pos)) throw new InvalidArgumentException("pos not found");
+        return $this->genQrCode($user->merchant, $pos);
+    }
+
+    private function genQrCode(Merchant $merchant, Pos $pos): string
+    {
+        $this->makeDirectories();
+        $result = Builder::create()
+            ->writer(new PngWriter())
+            ->writerOptions([])
+            ->data($pos->id)
+            ->encoding(new Encoding('UTF-8'))
+            ->errorCorrectionLevel(new ErrorCorrectionLevelHigh())
+            ->size(400)
+            ->margin(10)
+            ->roundBlockSizeMode(new RoundBlockSizeModeMargin())
+            ->logoPath(public_path('images\mini.jpg'))
+            // ->logoPath(asset('images/mini.jpg'))
+            ->labelText($merchant->name)
+            ->labelFont(new NotoSans(20))
+            ->labelAlignment(new LabelAlignmentCenter())
+            ->build();
+
+        $result->saveToFile(sprintf("%s\\%s.png", config('filesystems.disks.qr-codes.root'), $pos->id));
+
+        return asset("storage/qr-codes/$pos->id.png");
+    }
+
+    private function makeDirectories()
+    {
+        if (!Storage::disk('local')->exists('public\\qr-codes')) {
+            Storage::disk('local')->makeDirectory('public\\qr-codes');
+        }
+    }
+
+    public function getMyApprovals(User $user, FilterOptions $filterOptions): LengthAwarePaginator
+    {
+        $pagedData = $this->posApprovalModel->query()
+            ->where('pos_id', $user->pos->id)
+            ->where('status', Status::STATUS_PENDING)
+            ->latest()
+            ->paginate($filterOptions->pageSize, ['*'], 'page', $filterOptions->page);
+
+        $pagedData->getCollection()->transform(function (PosApproval $posApproval) {
+            return PosApprovalDto::map($posApproval);
+        });
+        return $pagedData;
+    }
+
+
+    public function getMobileAppDashboardStats(User $user): DashboardStats
+    {
+        $merchant = $user->merchant;
+        $pos = $user->pos;
+
+        $currency = $merchant->country->currency;
+
+        /*dd([
+            now()->startOfDay()->unix(),
+            now()->endOfDay()->unix(),
+            now()->unix(),
+        ]);*/
+
+        $todaySales = $this->transactionModel->query()->where('merchant_id', $merchant->id)
+            ->where('pos_id', $pos->id)
+            ->where('transaction', TransactionUtils::TRANSACTION_CREDIT)
+            // ->whereDate('created_at', now()->toDateString())
+            ->whereBetween('created_at', [now()->startOfDay()->unix(), now()->endOfDay()->unix()])
+            ->sum('amount');
+
+        $totalWeekly = $this->transactionModel->query()
+            ->where('merchant_id', $merchant->id)
+            ->where('pos_id', $pos->id)
+            ->where('transaction', TransactionUtils::TRANSACTION_CREDIT)
+            ->whereBetween('created_at', [now()->startOfWeek()->unix(), now()->endOfWeek()->unix()])
+            ->sum('amount');
+
+        $totalMonthly = $this->transactionModel->query()
+            ->where('merchant_id', $merchant->id)
+            ->where('pos_id', $pos->id)
+            ->where('transaction', TransactionUtils::TRANSACTION_CREDIT)
+            ->whereBetween('created_at', [now()->startOfMonth()->unix(), now()->endOfMonth()->unix()])
+            ->sum('amount');
+
+        return DashboardStats::instance()->setMerchantName($merchant->name)
+            ->setMyName($user->fullName)
+            ->setNotificationCount(0)
+            ->setPosCode($pos->code)
+            ->setSalesThisMonth(self::formatAmountWithCurrency($currency, $totalMonthly))
+            ->setSalesThisWeek(self::formatAmountWithCurrency($currency, $totalWeekly))
+            ->setSalesToday(self::formatAmountWithCurrency($currency, $todaySales));
+    }
+
+    private static function formatAmountWithCurrency(string $currency, float $amount): string
+    {
+        return sprintf("%s %s", $currency, number_format($amount, 2));
+    }
+
+
+    /**
+     * @throws Exception
+     */
+    public function approvalRequestActionCall(User $user, array $payload)
+    {
+        ['action' => $action, 'request_id' => $requestId] = $payload;
+
+        /** @var PosApproval $posApproval */
+        $posApproval = $this->posApprovalModel->query()->find($requestId);
+
+        $response = BaseCoreService::makeCall(Endpoints::getEndpointForAction(Endpoints::POS_APPROVAL_ACTION_CALL_ENDPOINT), ApiCallUtils::METHOD_POST, [
+            'reference' => $posApproval->reference,
+            'action' => $action
+        ]);
+
+        if ($response->successful()) {
+            switch ($action) {
+                case PosApprovalUtils::ACTION_APPROVE:
+                    $posApproval->status = Status::STATUS_COMPLETED;
+                    break;
+                case PosApprovalUtils::ACTION_DENY:
+                    $posApproval->status = Status::STATUS_REJECTED;
+                    break;
+            }
+            $posApproval->save();
+        }
+        //TODO add a try count to the model so you can reject after a specific number of tries
     }
 }

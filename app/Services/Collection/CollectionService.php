@@ -6,6 +6,10 @@ use App\Models\Category\MerchantCategory;
 use App\Models\Misc\Country;
 use App\Models\State;
 use App\Utils\CollectionUtils;
+use App\Utils\Core\BaseCoreService;
+use App\Utils\Core\Endpoints;
+use App\Utils\General\ApiCallUtils;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
 
@@ -17,9 +21,9 @@ class CollectionService implements ICollectionService
     private MerchantCategory $merchantCategoryModel;
 
     public function __construct(
-        Country $countryModel,
+        Country          $countryModel,
         MerchantCategory $merchantCategoryModel,
-        State $stateModel
+        State            $stateModel
     )
     {
         $this->countryModel = $countryModel;
@@ -27,6 +31,9 @@ class CollectionService implements ICollectionService
         $this->stateModel = $stateModel;
     }
 
+    /**
+     * @throws RequestException
+     */
     public function loadCollection(string $type, array $payload): Collection
     {
         switch ($type) {
@@ -37,6 +44,17 @@ class CollectionService implements ICollectionService
             case CollectionUtils::COLLECTION_TYPE_COUNTRIES_STATES:
                 ['type_id' => $typeId] = $payload;
                 return $this->loadCountryStates($typeId);
+            case CollectionUtils::COLLECTION_TYPE_CAMPAIGNS:
+                return collect(['video', 'flyer', 'rich_media', 'loops', 'survey']);
+            case CollectionUtils::COLLECTION_TYPE_GENDER:
+                return collect(['all', 'male', 'female', 'other']);
+            case CollectionUtils::COLLECTION_TYPE_MARITAL_STATUS:
+                return collect(['all', 'married', 'single']);
+            case CollectionUtils::COLLECTION_TYPE_INTERESTS:
+            case CollectionUtils::COLLECTION_TYPE_PROFESSIONS:
+            case CollectionUtils::COLLECTION_TYPE_LANGUAGES:
+                $response = BaseCoreService::makeCall(Endpoints::getEndpointForAction(Endpoints::LISTS_ENDPOINT . $type));
+                return collect($response->json());
             default:
                 throw new InvalidArgumentException("the collection type cannot be found");
         }
@@ -49,7 +67,7 @@ class CollectionService implements ICollectionService
 
     private function loadCountryStates(int $countryId)
     {
-        return $this->stateModel->query()->where('country_id',$countryId)->get();
+        return $this->stateModel->query()->where('country_id', $countryId)->get();
     }
 
     private function loadCategories()

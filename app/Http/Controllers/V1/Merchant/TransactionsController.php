@@ -18,10 +18,18 @@ class TransactionsController extends Controller
 
     public function getTransactions(): JsonResponse
     {
+        $filters = new TransactionsFilterOptions(request()->query('page') ?? 1, request()->query('page-size') ?? 25, request()->query('search-query'));
+
+        $filters->setAmountEnd(request()->query('amount-end'))
+            ->setAmountStart(request()->query("amount-start"))
+            ->setStartDate(request()->query("start-date"))
+            ->setEndDate(request()->query("end-date"))
+            ->setStatuses(request()->query("statuses"));
+
         return $this->successResponse(
             $this->transactionsService->getTransactions(
                 request()->user(),
-                new TransactionsFilterOptions(request()->query('page') ?? 1, request()->query('page-size') ?? 25, request()->query('search-query'))
+                $filters
             )
         );
     }

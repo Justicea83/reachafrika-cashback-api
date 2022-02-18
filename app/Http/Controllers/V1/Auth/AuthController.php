@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\V1\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\ChangePasswordRequest;
 use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\LoginWithRefreshTokenRequest;
 use App\Http\Requests\Auth\MobileLoginRequest;
@@ -21,6 +22,7 @@ class AuthController extends Controller
     {
         $this->authService = $authService;
     }
+
     //
 
     public function mobileLogin(MobileLoginRequest $request): JsonResponse
@@ -52,9 +54,16 @@ class AuthController extends Controller
         return $this->noContent();
     }
 
+    public function changePassword(ChangePasswordRequest $request): Response
+    {
+        //TODO implement 2FA in the future
+        $this->authService->changePassword($request->user(), $request->get('new_password'), $request->get('logout_of_all_other_devices'));
+        return $this->noContent();
+    }
+
     public function resetPassword(ResetPasswordRequest $request): JsonResponse
     {
-        if($this->authService->resetPassword($request->all())){
+        if ($this->authService->resetPassword($request->all())) {
             return $this->successResponse('password changed successfully');
         }
         return $this->errorResponse('we could not change your password');

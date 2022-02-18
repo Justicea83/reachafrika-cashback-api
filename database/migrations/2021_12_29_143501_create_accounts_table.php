@@ -18,8 +18,11 @@ class CreateAccountsTable extends Migration
         Schema::create('accounts', function (Blueprint $table) {
             $table->id();
             $table->float('balance')->default(0);
+            $table->string('type');
+            $table->string('currency');
             $table->foreignId('merchant_id')->constrained();
             $table->dateTime('last_settlement_at')->nullable();
+            $table->unique(['type','currency','merchant_id']);
             $this->useCommonColumns($table);
         });
     }

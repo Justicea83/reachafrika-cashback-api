@@ -7,6 +7,7 @@ use App\Models\Merchant\Branch;
 use App\Models\Merchant\Merchant;
 use App\Models\Role;
 use App\Models\User;
+use App\Utils\Finance\Merchant\Account\AccountUtils;
 use Illuminate\Database\Seeder;
 
 class StarterSeeder extends Seeder
@@ -30,16 +31,22 @@ class StarterSeeder extends Seeder
                 'name' => 'Frank Building Materials',
                 'primary_email' => 'frank.building@yahoo.fr',
                 'primary_phone' => '+233568769084',
-                'country_id' => 3,
+                'country_id' => 83,
                 'code' => 597892,
                 'website' => 'https://franco.bl.dev',
                 'primary_email_verified_at' => now()->toDateTimeString(),
                 'category_id' => $defaultCategory->id
             ]);
-            $defaultMerchant->account()->create();
+
+            foreach (AccountUtils::ALL_ACCOUNT_TYPES as $accountType){
+                $defaultMerchant->accounts()->create([
+                    'currency' => $defaultMerchant->country->currency,
+                    'type' => $accountType
+                ]);
+            }
             $defaultUser = User::query()->create([
                // 'merchant_id' => $defaultMerchant->id,
-                'merchant_id' => 1,
+                'merchant_id' => $defaultMerchant->id,
                 'first_name' => 'Frank',
                 'last_name' => 'James',
                 'email' => 'james@gmail.com',

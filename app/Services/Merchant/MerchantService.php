@@ -5,7 +5,10 @@ namespace App\Services\Merchant;
 use App\Models\Merchant\Branch;
 use App\Models\Merchant\Merchant;
 use App\Models\User;
+use App\Services\Settings\Finance\PaymentMode\IPaymentModeService;
 use App\Services\UserManagement\IUserManagementService;
+use App\Utils\Finance\Merchant\Account\AccountUtils;
+use App\Utils\Finance\PaymentMode\PaymentModeUtils;
 use App\Utils\MerchantUtils;
 use Exception;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -18,16 +21,19 @@ class MerchantService implements IMerchantService
     private IUserManagementService $userManagementService;
     private Merchant $merchantModel;
     private Branch $branchModel;
+    private IPaymentModeService $paymentModeService;
 
     function __construct(
         IUserManagementService $userManagementService,
         Merchant               $merchantModel,
-        Branch                 $branchModel
+        Branch                 $branchModel,
+        IPaymentModeService    $paymentModeService
     )
     {
         $this->userManagementService = $userManagementService;
         $this->merchantModel = $merchantModel;
         $this->branchModel = $branchModel;
+        $this->paymentModeService = $paymentModeService;
     }
 
     /**
@@ -40,14 +46,23 @@ class MerchantService implements IMerchantService
             'merchant' => $merchant
         ] = $payload;
 
-        //create merchant
-        /** @var Merchant $createdMerchant */
-        $createdMerchant = $this->createMerchant($user, $merchant);
+        DB::beginTransaction();
 
+        try {
+            //create merchant
+            /** @var Merchant $createdMerchant */
+            $createdMerchant = $this->createMerchant($user, $merchant);
 
-        /** @var User $createdUser */
-        $userData['merchant_id'] = $createdMerchant->id;
-        $this->userManagementService->createUser($userData);
+            /** @var User $createdUser */
+            $userData['merchant_id'] = $createdMerchant->id;
+            $this->userManagementService->createUser($userData);
+
+        } catch (Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+
+        DB::commit();
     }
 
     /**
@@ -55,22 +70,24 @@ class MerchantService implements IMerchantService
      */
     public function createMerchant(?User $user, array $payload): ?Model
     {
-        $merchant = null;
         if ($user != null)
             $payload['created_by'] = $user->id;
         $payload['code'] = $this->getCodeForMerchant();
 
-        DB::beginTransaction();
+        /** @var Merchant $merchant */
+        $merchant = $this->merchantModel->query()->create($payload);
 
-        try {
-            /** @var Merchant $merchant */
-            $merchant = $this->merchantModel->query()->create($payload);
-            $merchant->account()->create();
-        } catch (Exception $e) {
-            DB::rollBack();
+        foreach (AccountUtils::ALL_ACCOUNT_TYPES as $accountType){
+            $merchant->accounts()->create([
+                'currency' => $merchant->country->currency,
+                'type' => $accountType
+            ]);
         }
 
-        DB::commit();
+
+        // create default payment method
+        $this->paymentModeService->addPaymentModeFromName($merchant, PaymentModeUtils::PAYMENT_MODE_REACHAFRIKA, true);
+
         return $merchant;
     }
 
@@ -231,4 +248,5 @@ class MerchantService implements IMerchantService
     {
         return $this->merchantModel->query()->with(['mainBranch'])->find($user->merchant_id);
     }
+
 }

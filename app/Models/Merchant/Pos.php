@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property mixed|string status
  * @property mixed id
  * @property mixed $name
+ * @property mixed $code
  */
 class Pos extends Model
 {

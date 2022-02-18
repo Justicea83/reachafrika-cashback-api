@@ -115,14 +115,23 @@ class AuthService implements IAuthService
             'email_verified' => $user->email_verified_at != null,
             'phone_verified' => $user->phone_verified_at != null,
             'joined' => $user->created_at,
+            'merchant_name' => $user->merchant->name,
+            'id'=> $user->id
         ];
     }
 
-    public function changePassword(User $user, $password)
+    public function changePassword(User $user, string $password, bool $logout = false)
     {
         $user->password = bcrypt($password);
-        if ($user->isDirty())
+        if ($user->isDirty()) {
             $user->save();
+
+            if ($logout) {
+                $user->tokens()
+                    ->where('id', '<>', $user->token()->id)
+                    ->delete();
+            }
+        }
     }
 
 

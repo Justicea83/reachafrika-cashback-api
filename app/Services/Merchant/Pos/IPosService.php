@@ -2,7 +2,9 @@
 
 namespace App\Services\Merchant\Pos;
 
+use App\Entities\Responses\Pos\DashboardStats;
 use App\Models\User;
+use App\Utils\General\FilterOptions;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
@@ -11,7 +13,7 @@ interface IPosService
 {
     public function createPos(User $user, array $payload): Model;
 
-    public function getPos(int $posId): Model;
+    public function getPos(int $posId): ?Model;
 
     public function getAllPos(User $user): LengthAwarePaginator;
 
@@ -38,4 +40,13 @@ interface IPosService
     public function assignPosToBranch(int $id, int $branchId);
 
     public function sendApprovalRequest(User $user, array $payload, string $userAgent);
+
+    public function getQrCode(User $user, int $posId): string;
+
+    public function getMyApprovals(User $user, FilterOptions $filterOptions): LengthAwarePaginator;
+
+    public function approvalRequestActionCall(User $user, array $payload);
+
+    public function getMobileAppDashboardStats(User $user) : DashboardStats;
+
 }

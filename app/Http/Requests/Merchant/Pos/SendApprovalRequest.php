@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\Merchant\Pos;
 
-use App\Models\Merchant\Branch;
 use App\Models\Merchant\Pos;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;

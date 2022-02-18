@@ -7,6 +7,7 @@ use App\Models\Category\MerchantCategory;
 use App\Models\Finance\Account;
 use App\Models\Misc\Country;
 use App\Models\User;
+use App\Utils\Finance\Merchant\Account\AccountUtils;
 use ArrayAccess;
 use Database\Factories\MerchantFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -29,6 +30,10 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property array|ArrayAccess|mixed about
  * @property false|mixed|string avatar
  * @property Country $country
+ * @property Account $creditAccount
+ * @property Account $normalAccount
+ * @property Account $rewardAccount
+ * @property Account $escrowAccount
  */
 class Merchant extends BaseModel
 {
@@ -66,8 +71,36 @@ class Merchant extends BaseModel
         return $this->belongsTo(Country::class);
     }
 
+    /**
+     * @deprecated
+     * */
     public function account(): HasOne
     {
         return $this->hasOne(Account::class);
+    }
+
+    public function accounts(): HasMany
+    {
+        return $this->hasMany(Account::class);
+    }
+
+    public function creditAccount(): HasOne
+    {
+        return $this->hasOne(Account::class)->where('type', AccountUtils::ACCOUNT_TYPE_CREDIT);
+    }
+
+    public function normalAccount(): HasOne
+    {
+        return $this->hasOne(Account::class)->where('type', AccountUtils::ACCOUNT_TYPE_NORMAL);
+    }
+
+    public function rewardAccount(): HasOne
+    {
+        return $this->hasOne(Account::class)->where('type', AccountUtils::ACCOUNT_TYPE_REWARD);
+    }
+
+    public function escrowAccount(): HasOne
+    {
+        return $this->hasOne(Account::class)->where('type', AccountUtils::ACCOUNT_TYPE_ESCROW);
     }
 }
