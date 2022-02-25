@@ -6,11 +6,15 @@ use App\Dtos\Promo\PromoCampaignDto;
 use App\Http\Requests\Promo\CreatePromoCampaignRequest;
 use App\Http\Requests\Promo\GetTargetCountRequest;
 use App\Models\Promo\Campaign\PromoCampaign;
+use App\Models\Promo\Campaign\PromoCampaignSchedule;
+use App\Models\Promo\Schedule;
 use App\Models\User;
 use App\Utils\Finance\Merchant\Account\AccountUtils;
 use App\Utils\General\FilterOptions;
 use App\Utils\General\MiscUtils;
 use App\Utils\Promo\PromoCampaignUtils;
+use App\Utils\Promo\PromoDayUtils;
+use App\Utils\Status;
 use Aws\CloudFront\CloudFrontClient;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -52,7 +56,7 @@ class PromoCampaignService implements IPromoCampaignService
 
             $campaign = new PromoCampaign;
             $campaign->merchant_id = $user->merchant_id;
-
+            $campaign->currency = $user->merchant->country->currency;
             $path = $request->file('media')->store('campaigns', 'campaigns');
 
             $campaign->media = $path;
@@ -154,7 +158,6 @@ class PromoCampaignService implements IPromoCampaignService
         }
     }
 
-
     public function getCampaigns(User $user, FilterOptions $filterOptions): LengthAwarePaginator
     {
         $pagedData = $this->promoCampaignModel->query()
@@ -183,7 +186,6 @@ class PromoCampaignService implements IPromoCampaignService
 
         $campaign->save();
     }
-
 
     public function pauseCampaign(User $user, int $id)
     {
@@ -302,7 +304,7 @@ class PromoCampaignService implements IPromoCampaignService
      */
     public function streamUrl(string $path, ?int $expiry = null): string
     {
-        if(is_null($expiry)) $expiry = now()->addMinutes(200)->unix();
+        if (is_null($expiry)) $expiry = now()->addMinutes(200)->unix();
         $cloud = new CloudFrontClient([
             'region' => 'us-east-1',
             'version' => 'latest'
@@ -314,5 +316,75 @@ class PromoCampaignService implements IPromoCampaignService
             'key_pair_id' => config('cloudfront.key_pair_id'),
             'private_key' => Storage::disk('files')->get('cloudfront.pem'),
         ]);
+    }
+
+    public function schedule()
+    {
+        /** @var PromoCampaign $promoCampaign */
+        foreach (
+            $this->promoCampaignModel->query()->whereNotNull('approved_at')
+                ->where('status', Status::PROMO_CAMPAIGN_STATUS_ACTIVE)
+                ->where('blocked', false)
+                ->cursor()
+            as $promoCampaign
+        ) {
+            /** @var PromoCampaignSchedule $promoCampaignSchedule */
+            foreach ($promoCampaign->schedules()->cursor() as $promoCampaignSchedule) {
+
+                if (!$promoCampaignSchedule->schedule->active) continue;
+
+                switch ($promoCampaignSchedule->schedule->day->description) {
+                    case PromoDayUtils::MONDAYS_TO_FRIDAYS:
+                        $days = [1, 2, 3, 4, 5];
+                        break;
+                    case PromoDayUtils::ALL_DAYS:
+                        $days = [0, 1, 2, 3, 4, 5, 6];
+                        break;
+                    case PromoDayUtils::SUNDAYS:
+                        $days = [0];
+                        break;
+                    case PromoDayUtils::MONDAYS:
+                        $days = [1];
+                        break;
+                    case PromoDayUtils::TUESDAYS:
+                        $days = [2];
+                        break;
+                    case PromoDayUtils::WEDNESDAYS:
+                        $days = [3];
+                        break;
+                    case PromoDayUtils::THURSDAYS:
+                        $days = [4];
+                        break;
+                    case PromoDayUtils::FRIDAYS:
+                        $days = [5];
+                        break;
+                    case PromoDayUtils::SATURDAYS:
+                        $days = [6];
+                        break;
+                    default:
+                        throw new InvalidArgumentException('schedule out of range');
+                }
+
+                if (in_array(now()->dayOfWeek, $days)) {
+                    if ($this->scheduleTimeInRange($promoCampaignSchedule->schedule)) {
+                        $promoCampaign->scheduled = true;
+                        $promoCampaign->save();
+                        break;
+                    }
+                } else {
+                    $promoCampaign->scheduled = false;
+                    $promoCampaign->save();
+                }
+            }
+        }
+    }
+
+    private function scheduleTimeInRange(Schedule $schedule): bool
+    {
+        $start = Carbon::parse($schedule->fromTime->name_12)->unix();
+        $end = Carbon::parse($schedule->toTime->name_12)->unix();
+        $now = now()->unix();
+
+        return $now >= $start && $now <= $end;
     }
 }

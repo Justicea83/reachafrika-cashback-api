@@ -36,6 +36,8 @@ use Ramsey\Collection\Collection;
  * @property mixed $blocked
  * @property PromoFrequency $frequency
  * @property Collection $schedules
+ * @property mixed $currency
+ * @property false|mixed $scheduled
  */
 class PromoCampaign extends BaseModel
 {
