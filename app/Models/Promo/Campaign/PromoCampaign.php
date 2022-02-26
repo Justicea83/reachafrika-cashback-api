@@ -3,6 +3,7 @@
 namespace App\Models\Promo\Campaign;
 
 use App\Models\BaseModel;
+use App\Models\Merchant\Merchant;
 use App\Models\Promo\PromoFrequency;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -36,6 +37,9 @@ use Ramsey\Collection\Collection;
  * @property mixed $blocked
  * @property PromoFrequency $frequency
  * @property Collection $schedules
+ * @property mixed $currency
+ * @property false|mixed $last_scheduled_at
+ * @property Merchant $merchant
  */
 class PromoCampaign extends BaseModel
 {
@@ -57,5 +61,10 @@ class PromoCampaign extends BaseModel
     public function frequency(): BelongsTo
     {
         return $this->belongsTo(PromoFrequency::class, 'promo_frequency_id');
+    }
+
+    public function merchant(): BelongsTo
+    {
+        return $this->belongsTo(Merchant::class);
     }
 }

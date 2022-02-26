@@ -4,6 +4,7 @@ namespace App\Utils\Finance\Merchant\Account;
 
 use App\Exceptions\Merchant\AccountNotFoundException;
 use App\Models\Finance\Account;
+use App\Models\Merchant\Merchant;
 use App\Models\User;
 use App\Utils\Finance\Merchant\TransactionUtils;
 use App\Utils\General\MiscUtils;
@@ -27,7 +28,7 @@ class AccountUtils
     /**
      * @throws AccountNotFoundException
      */
-    public static function intraAccountMoneyMovement(User $user, string $from, string $to, float $amount)
+    public static function intraAccountMoneyMovement(Merchant $merchant,User $user, string $from, string $to, float $amount)
     {
         /** @var Account $fromAccount */
         $fromAccount = Account::query()->where('type', strtolower($from))
@@ -47,6 +48,7 @@ class AccountUtils
         $groupReference = MiscUtils::getToken(32);
 
         $fromAccountTransaction = MerchantUtils::createTransaction(
+            $merchant,
             $user,
             TransactionUtils::TRANSACTION_DEBIT,
             $fromAccount,
@@ -59,6 +61,7 @@ class AccountUtils
         );
 
         $toAccountTransaction = MerchantUtils::createTransaction(
+            $merchant,
             $user,
             TransactionUtils::TRANSACTION_CREDIT,
             $toAccount,
