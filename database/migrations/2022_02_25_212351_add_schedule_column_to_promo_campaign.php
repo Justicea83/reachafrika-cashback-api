@@ -14,7 +14,7 @@ class AddScheduleColumnToPromoCampaign extends Migration
     public function up()
     {
         Schema::table('promo_campaigns', function (Blueprint $table) {
-            $table->boolean('scheduled')->after('visible')->default(false);
+            $table->unsignedBigInteger('last_scheduled_at')->after('visible')->nullable();
         });
     }
 
@@ -26,8 +26,8 @@ class AddScheduleColumnToPromoCampaign extends Migration
     public function down()
     {
         Schema::table('promo_campaigns', function (Blueprint $table) {
-            if(Schema::hasColumn('promo_campaigns','scheduled')){
-                $table->dropColumn('scheduled');
+            if(Schema::hasColumn('promo_campaigns','last_scheduled_at')){
+                $table->dropColumn('last_scheduled_at');
             }
         });
     }

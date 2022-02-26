@@ -23,5 +23,5 @@ interface IPromoCampaignService
     public function downloadBlob(string $path) : StreamedResponse;
     public function streamUrl(string $path) : string;
     public function schedule();
-    //TODO endpoint for campaign statistics
+    public function processCampaigns();
 }

@@ -3,6 +3,7 @@
 namespace App\Services\Promo\Campaign;
 
 use App\Dtos\Promo\PromoCampaignDto;
+use App\Exceptions\Merchant\AccountNotFoundException;
 use App\Http\Requests\Promo\CreatePromoCampaignRequest;
 use App\Http\Requests\Promo\GetTargetCountRequest;
 use App\Models\Promo\Campaign\PromoCampaign;
@@ -22,6 +23,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Facades\Image;
 use InvalidArgumentException;
@@ -52,7 +54,7 @@ class PromoCampaignService implements IPromoCampaignService
         try {
             //deduct merchant credit account balance and move it to escrow
 
-            AccountUtils::intraAccountMoneyMovement($user, AccountUtils::ACCOUNT_TYPE_CREDIT, AccountUtils::ACCOUNT_TYPE_ESCROW, $request['budget']);
+            AccountUtils::intraAccountMoneyMovement($user->merchant, $user, AccountUtils::ACCOUNT_TYPE_CREDIT, AccountUtils::ACCOUNT_TYPE_ESCROW, $request['budget']);
 
             $campaign = new PromoCampaign;
             $campaign->merchant_id = $user->merchant_id;
@@ -323,11 +325,19 @@ class PromoCampaignService implements IPromoCampaignService
         /** @var PromoCampaign $promoCampaign */
         foreach (
             $this->promoCampaignModel->query()->whereNotNull('approved_at')
-                ->where('status', Status::PROMO_CAMPAIGN_STATUS_ACTIVE)
-                ->where('blocked', false)
+                ->whereNotIn('status', [Status::PROMO_CAMPAIGN_STATUS_EXPIRED])
+                ->latest()
                 ->cursor()
             as $promoCampaign
         ) {
+
+            if ($promoCampaign->blocked || $promoCampaign->status != Status::PROMO_CAMPAIGN_STATUS_ACTIVE) {
+                $promoCampaign->last_scheduled_at = null;
+                $promoCampaign->save();
+                continue;
+            }
+
+
             /** @var PromoCampaignSchedule $promoCampaignSchedule */
             foreach ($promoCampaign->schedules()->cursor() as $promoCampaignSchedule) {
 
@@ -367,12 +377,12 @@ class PromoCampaignService implements IPromoCampaignService
 
                 if (in_array(now()->dayOfWeek, $days)) {
                     if ($this->scheduleTimeInRange($promoCampaignSchedule->schedule)) {
-                        $promoCampaign->scheduled = true;
+                        $promoCampaign->last_scheduled_at = now()->unix();
                         $promoCampaign->save();
                         break;
                     }
                 } else {
-                    $promoCampaign->scheduled = false;
+                    $promoCampaign->last_scheduled_at = null;
                     $promoCampaign->save();
                 }
             }
@@ -386,5 +396,49 @@ class PromoCampaignService implements IPromoCampaignService
         $now = now()->unix();
 
         return $now >= $start && $now <= $end;
+    }
+
+    /**
+     * @throws AccountNotFoundException
+     */
+
+    public function processCampaigns()
+    {
+        $this->promoCampaignModel->query()->whereIn('status', ['active', 'expiring'])->chunkById(
+            50,
+            function ($campaigns) {
+                /** @var PromoCampaign $campaign */
+                foreach ($campaigns as $campaign) {
+
+                    $start = $campaign->start;
+                    $end = $campaign->end;
+
+                    if (now()->isBetween(Carbon::parse($start), Carbon::parse($end))) {
+                        if ($campaign->impressions_track > 0) {
+                            Log::info(get_class(), ['message' => sprintf("campaign with id: %s has been updated", $campaign->id)]);
+                            $campaign->visible = true;
+                        } else {
+                            Log::info(get_class(), ['message' => sprintf("campaign with id: %s is out of gas", $campaign->id)]);
+                            //emails may be sent here
+                            $campaign->visible = false;
+                        }
+
+                    } else {
+                        $campaign->visible = false;
+                        $campaign->status = Status::PROMO_CAMPAIGN_STATUS_EXPIRED;
+
+                        $merchant = $campaign->merchant;
+                        $remainingAmount = $campaign->budget * $campaign->impressions_track;
+
+                        AccountUtils::intraAccountMoneyMovement($merchant, null, AccountUtils::ACCOUNT_TYPE_ESCROW, AccountUtils::ACCOUNT_TYPE_CREDIT, $remainingAmount);
+
+                        //update campaign
+                        $campaign->impressions_track = 0;
+                        //send email alerts here
+                    }
+
+                    $campaign->save();
+                }
+            });
     }
 }
