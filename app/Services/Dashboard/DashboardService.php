@@ -4,6 +4,7 @@ namespace App\Services\Dashboard;
 
 use App\Entities\Responses\Dashboard\OverviewResponse;
 use App\Models\User;
+use App\Utils\CashbackUtils;
 use Illuminate\Support\Facades\DB;
 
 class DashboardService implements IDashboardService
@@ -16,10 +17,11 @@ class DashboardService implements IDashboardService
                 SELECT COUNT(*) transactions_count
             FROM transactions trans
             WHERE trans.merchant_id = :merchant_id
-            AND trans.transaction_type = 'cashback'
+            AND trans.transaction_type = :transaction_type
             "),
             [
-                'merchant_id' => $user->merchant_id
+                'merchant_id' => $user->merchant_id,
+                'transaction_type' => CashbackUtils::NAME
             ]
         );
 
@@ -30,12 +32,13 @@ class DashboardService implements IDashboardService
         INNER JOIN merchants m on trans.merchant_id = m.id
         INNER JOIN countries c on m.country_id = c.id
             WHERE trans.merchant_id = :merchant_id
-            AND trans.transaction_type = 'cashback'
+            AND trans.transaction_type = :transaction_type
         GROUP BY trans.merchant_id
 
             "),
             [
-                'merchant_id' => $user->merchant_id
+                'merchant_id' => $user->merchant_id,
+                'transaction_type' => CashbackUtils::NAME
             ]
         );
 
@@ -59,11 +62,13 @@ class DashboardService implements IDashboardService
         INNER JOIN merchants m on b.merchant_id = m.id
         INNER JOIN countries c on m.country_id = c.id
         WHERE trans.merchant_id = :merchant_id
-        AND trans.transaction_type = 'cashback'
+        AND trans.transaction_type = :transaction_type
         GROUP BY trans.branch_id
             "),
             [
-                'merchant_id' => $user->merchant_id
+                'merchant_id' => $user->merchant_id,
+                'transaction_type' => CashbackUtils::NAME
+
             ]
         );
 
@@ -80,11 +85,12 @@ class DashboardService implements IDashboardService
             INNER JOIN countries c on m.country_id = c.id
             INNER JOIN pos p on trans.pos_id = p.id
             WHERE trans.merchant_id = :merchant_id
-            AND trans.transaction_type = 'cashback'
+            AND trans.transaction_type = :transaction_type
             GROUP BY trans.pos_id,trans.branch_id
             "),
             [
-                'merchant_id' => $user->merchant_id
+                'merchant_id' => $user->merchant_id,
+                'transaction_type' => CashbackUtils::NAME
             ]
         );
     }
