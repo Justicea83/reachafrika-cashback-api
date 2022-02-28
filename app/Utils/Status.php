@@ -9,6 +9,6 @@ class Status
     const STATUS_REJECTED = 'rejected';
 
     const PROMO_CAMPAIGN_STATUS_ACTIVE = 'active';
-    const PROMO_CAMPAIGN_STATUS_EXPIRED = 'active';
+    const PROMO_CAMPAIGN_STATUS_EXPIRED = 'expired';
     const PROMO_CAMPAIGN_STATUS_REJECTED = 'rejected';
 }
