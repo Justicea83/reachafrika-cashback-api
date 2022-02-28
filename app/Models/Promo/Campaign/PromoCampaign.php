@@ -5,6 +5,7 @@ namespace App\Models\Promo\Campaign;
 use App\Models\BaseModel;
 use App\Models\Merchant\Merchant;
 use App\Models\Promo\PromoFrequency;
+use Database\Factories\PromoCampaignFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -63,8 +64,14 @@ class PromoCampaign extends BaseModel
         return $this->belongsTo(PromoFrequency::class, 'promo_frequency_id');
     }
 
+
+    protected static function newFactory(): PromoCampaignFactory
+    {
+        return PromoCampaignFactory::new();
+
     public function merchant(): BelongsTo
     {
         return $this->belongsTo(Merchant::class);
+
     }
 }
