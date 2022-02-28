@@ -8,7 +8,6 @@ use App\Models\Promo\PromoFrequency;
 use Database\Factories\PromoCampaignFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Ramsey\Collection\Collection;
 
 /**
@@ -68,6 +67,7 @@ class PromoCampaign extends BaseModel
     protected static function newFactory(): PromoCampaignFactory
     {
         return PromoCampaignFactory::new();
+    }
 
     public function merchant(): BelongsTo
     {
