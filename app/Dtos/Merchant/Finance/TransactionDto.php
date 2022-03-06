@@ -29,8 +29,9 @@ class TransactionDto extends BaseDto
 
     /**
      * @param Transaction $model
+     * @param array $params
      */
-    public function mapFromModel($model): TransactionDto
+    public function mapFromModel($model, array $params = []): TransactionDto
     {
         $instance = self::instance();
         $instance->id = $model->id;

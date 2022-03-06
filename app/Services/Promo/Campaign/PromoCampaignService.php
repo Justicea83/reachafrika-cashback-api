@@ -6,6 +6,7 @@ use App\Dtos\Promo\PromoCampaignDto;
 use App\Exceptions\Merchant\AccountNotFoundException;
 use App\Http\Requests\Promo\CreatePromoCampaignRequest;
 use App\Http\Requests\Promo\GetTargetCountRequest;
+use App\Models\Core\SiteSetting;
 use App\Models\Promo\Campaign\PromoCampaign;
 use App\Models\Promo\Campaign\PromoCampaignSchedule;
 use App\Models\Promo\Schedule;
@@ -35,10 +36,12 @@ class PromoCampaignService implements IPromoCampaignService
 {
 
     private PromoCampaign $promoCampaignModel;
+    private SiteSetting $siteSettingModel;
 
-    function __construct(PromoCampaign $promoCampaignModel)
+    function __construct(PromoCampaign $promoCampaignModel, SiteSetting $siteSettingModel)
     {
         $this->promoCampaignModel = $promoCampaignModel;
+        $this->siteSettingModel = $siteSettingModel;
     }
 
     /**
@@ -48,6 +51,13 @@ class PromoCampaignService implements IPromoCampaignService
     {
         /** @var User $user */
         $user = $request->user();
+
+        //get the profile id for a particular merchant
+        $merchantProfileId = $this->getMerchantProfileDetails($user);
+
+        /** @var SiteSetting $siteSetting */
+        $siteSetting = $this->siteSettingModel->query()->where('profile_id', $merchantProfileId)->select(['id', 'per_impression', 'flyer_duration'])->first();
+        if ($siteSetting == null) throw new ModelNotFoundException();
 
         DB::beginTransaction();
 
@@ -72,6 +82,7 @@ class PromoCampaignService implements IPromoCampaignService
 
                     //save the thumbnail
                     $campaign->thumbnail = $thumbnailPath;
+                    $campaign->duration = $siteSetting->flyer_duration;
                     break;
                 case PromoCampaignUtils::CAMPAIGN_TYPE_VIDEO:
                     $thumbnailPath = sprintf("thumbnails/%s.png", MiscUtils::getToken(60));
@@ -93,8 +104,7 @@ class PromoCampaignService implements IPromoCampaignService
                     throw new InvalidArgumentException('media type not found');
             }
 
-            //TODO compute the impressions from the site admin settings
-            $impressions = $request['budget'] / 2;
+            $impressions = $request['budget'] / $siteSetting->per_impression;
 
             $campaign->start = Carbon::parse($request['start'])->unix();
             $campaign->end = Carbon::parse($request['end'])->unix();
@@ -153,22 +163,36 @@ class PromoCampaignService implements IPromoCampaignService
             //commit all the changes to the db
             DB::commit();
 
-            return PromoCampaignDto::map($updatedCampaign);
+            //return the mapped dto
+            return PromoCampaignDto::map($updatedCampaign, [
+                'siteSetting' => $siteSetting
+            ]);
         } catch (Throwable $e) {
             DB::rollBack();
+            Log::error(get_class(), ['message' => sprintf('%s --> %s', 'There was am error while attempting to create a campaign', $e->getMessage())]);
             throw $e;
         }
     }
 
     public function getCampaigns(User $user, FilterOptions $filterOptions): LengthAwarePaginator
     {
+        //get the profile id for a particular merchant
+        $merchantProfileId = $this->getMerchantProfileDetails($user);
+
+        /** @var SiteSetting $siteSetting */
+        $siteSetting = $this->siteSettingModel->query()->where('profile_id', $merchantProfileId)->select(['id', 'per_impression', 'flyer_duration'])->first();
+
+        if ($siteSetting == null) throw new ModelNotFoundException();
+
         $pagedData = $this->promoCampaignModel->query()
             ->where('merchant_id', $user->merchant_id)
             ->latest()
             ->paginate($filterOptions->pageSize, ['*'], 'page', $filterOptions->page);
 
-        $pagedData->getCollection()->transform(function (PromoCampaign $campaign) {
-            return PromoCampaignDto::map($campaign);
+        $pagedData->getCollection()->transform(function (PromoCampaign $campaign) use ($siteSetting) {
+            return PromoCampaignDto::map($campaign, [
+                'siteSetting' => $siteSetting
+            ]);
         });
 
         return $pagedData;
@@ -288,7 +312,7 @@ class PromoCampaignService implements IPromoCampaignService
             ->count();
     }
 
-    public function getBuilderForMerchantPotentialBuilder(int $merchantProfile): Builder
+    private function getBuilderForMerchantPotentialBuilder(int $merchantProfile): Builder
     {
         return DB::connection('reachafrika_core')->table('roles')->where('name', 'user')
             ->join('role_user', 'role_user.role_id', 'roles.id')

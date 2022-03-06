@@ -4,6 +4,7 @@ namespace App\Dtos;
 
 abstract class BaseDto
 {
-    abstract public function mapFromModel($model);
+    public array $params = [];
+    abstract public function mapFromModel($model, array $params = []);
 }
 

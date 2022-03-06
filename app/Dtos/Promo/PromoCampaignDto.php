@@ -3,9 +3,11 @@
 namespace App\Dtos\Promo;
 
 use App\Dtos\BaseDto;
+use App\Models\Core\SiteSetting;
 use App\Models\Promo\Campaign\PromoCampaign;
 use App\Models\Promo\Campaign\PromoCampaignSchedule;
 use App\Services\Promo\Campaign\IPromoCampaignService;
+use App\Utils\Promo\PromoCampaignUtils;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 
@@ -40,13 +42,16 @@ class PromoCampaignDto extends BaseDto
 
     /**
      * @param PromoCampaign $model
+     * @param array $params
      * @return void
      */
-    public function mapFromModel($model): PromoCampaignDto
+    public function mapFromModel($model, array $params = []): PromoCampaignDto
     {
+        /** @var SiteSetting $siteSetting */
+        ['siteSetting' => $siteSetting] = $params;
+        $this->params = $params;
         /** @var IPromoCampaignService $promoCampaignService */
         $promoCampaignService = App::make(IPromoCampaignService::class);
-
 
         return self::instance()
             ->setId($model->id)
@@ -67,7 +72,7 @@ class PromoCampaignDto extends BaseDto
             ->setMedia(route('promo.campaigns.download', ['path' => $model->media]))
             ->setType($model->type)
             ->setDuration(
-                $model->duration
+                $model->type == PromoCampaignUtils::CAMPAIGN_TYPE_FLYER ? $siteSetting->flyer_duration : $model->duration
             )
             ->setCallbackUrl($model->callback_url)
             ->setMinAge($model->min_age)
@@ -88,10 +93,10 @@ class PromoCampaignDto extends BaseDto
         return new PromoCampaignDto();
     }
 
-    public static function map(PromoCampaign $promoCampaign): PromoCampaignDto
+    public static function map(PromoCampaign $promoCampaign, array $params = []): PromoCampaignDto
     {
         $instance = self::instance();
-        return $instance->mapFromModel($promoCampaign);
+        return $instance->mapFromModel($promoCampaign, $params);
     }
 
     //<editor-fold desc="Fluent Setters">
