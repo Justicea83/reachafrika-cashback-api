@@ -18,20 +18,6 @@ use Illuminate\Support\Str;
 
 class SettlementService implements ISettlementService
 {
-
-
-
-    public function settleMerchants()
-    {
-
-    }
-
-    public function reverseTransactionForMerchant()
-    {
-        // TODO: Implement reverseTransactionForMerchant() method.
-    }
-
-
     public function addMerchantSubAccounts(int $merchantId)
     {
         /** @var Merchant $merchant */
@@ -49,7 +35,6 @@ class SettlementService implements ISettlementService
         //add subaccount for paystack
         $this->paystackAddMerchantSubAccount($merchant, $country, $settlementBank);
         //add for monnify later
-        // TODO: Implement addMerchantSubAccounts() method.
     }
 
     private function flutterwaveAddMerchantSubAccount(Merchant $merchant, Country $country, SettlementBank $settlementBank)
