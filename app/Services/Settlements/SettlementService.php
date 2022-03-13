@@ -9,6 +9,7 @@ use App\Facades\Payments\Flutterwave;
 use App\Models\Merchant\Merchant;
 use App\Models\Misc\Country;
 use App\Models\SettlementBank;
+use App\Models\User;
 use App\Utils\General\AppUtils;
 use App\Utils\MerchantUtils;
 use App\Utils\Payments\Flutterwave\FlutterwaveUtility;
@@ -18,6 +19,14 @@ use Illuminate\Support\Str;
 
 class SettlementService implements ISettlementService
 {
+    public function withdraw(User $user)
+    {
+        //TODO check if the amount is set to a certain limit
+        //TODO make sure the admin sets that limit
+        //TODO make sure the admin sets the split value as well
+        // TODO: Implement withdraw() method.
+    }
+
     public function addMerchantSubAccounts(int $merchantId)
     {
         /** @var Merchant $merchant */
@@ -168,4 +177,6 @@ class SettlementService implements ISettlementService
         $merchant->extra_data = $extraData;
         $merchant->save();
     }
+
+
 }
