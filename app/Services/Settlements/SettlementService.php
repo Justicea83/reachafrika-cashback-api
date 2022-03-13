@@ -9,36 +9,21 @@ use App\Facades\Payments\Flutterwave;
 use App\Models\Merchant\Merchant;
 use App\Models\Misc\Country;
 use App\Models\SettlementBank;
-use App\Utils\Finance\Merchant\Account\AccountUtils;
 use App\Utils\General\AppUtils;
 use App\Utils\MerchantUtils;
 use App\Utils\Payments\Flutterwave\FlutterwaveUtility;
 use App\Utils\Payments\Paystack\PaystackUtility;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class SettlementService implements ISettlementService
 {
 
-    private Merchant $merchantModel;
 
-    function __construct(Merchant $merchantModel)
-    {
-        $this->merchantModel = $merchantModel;
-    }
 
     public function settleMerchants()
     {
-        $this->merchantModel->query()
-            ->join('accounts', 'accounts.merchant_id', 'merchants.id')
-            ->where('accounts.type', AccountUtils::ACCOUNT_TYPE_NORMAL)
-            ->where('accounts.balance', '>', 0)
-            // ->whereRaw("accounts.last_settlement_at IS NULL OR accounts.last_settlement_at = ?", [now()->subHours(23)->toDateString()])
-            ->select(['merchants.id', 'merchants.primary_email as email', 'merchants.country_id'])
-            ->chunkById(50, function (Collection $merchants) {
-                dd($merchants->toArray());
-            }, 'merchants.id');
+
     }
 
     public function reverseTransactionForMerchant()
@@ -63,6 +48,7 @@ class SettlementService implements ISettlementService
         $this->flutterwaveAddMerchantSubAccount($merchant, $country, $settlementBank);
         //add subaccount for paystack
         $this->paystackAddMerchantSubAccount($merchant, $country, $settlementBank);
+        //add for monnify later
         // TODO: Implement addMerchantSubAccounts() method.
     }
 
@@ -162,7 +148,6 @@ class SettlementService implements ISettlementService
             return similar_text($bank['name'], $bankName) >= strlen(AppUtils::removeSpacesSpecialChar($bankName));
         });
 
-
         ['code' => $code] = $bank;
 
         $extraData = $merchant->extra_data;
@@ -176,7 +161,7 @@ class SettlementService implements ISettlementService
             "domain" => 'test',
             "primary_contact_email" => $merchant->primary_email,
             "primary_contact_phone" => $merchant->primary_phone,
-            "percentage_charge" => 0.05
+            "percentage_charge" => 11.5
         ];
 
         if (!app()->environment('production')) {
