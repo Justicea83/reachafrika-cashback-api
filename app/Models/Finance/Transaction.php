@@ -29,6 +29,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property float|mixed $balance_after
  * @property int|mixed $payment_mode_id
  * @property mixed $account
+ * @property mixed $outstanding_balance_before
+ * @property mixed $outstanding_balance_after
  */
 class Transaction extends BaseModel
 {
