@@ -8,6 +8,7 @@ use App\Providers\MerchantServiceProvider;
 use App\Providers\NotificationServiceProvider;
 use App\Providers\PromoServiceProvider;
 use App\Providers\SettingsServiceProvider;
+use App\Providers\SettlementsServiceProvider;
 use App\Providers\UserManagementServiceProvider;
 
 return [
@@ -194,6 +195,7 @@ return [
         NotificationServiceProvider::class,
         PromoServiceProvider::class,
         DashboardServiceProvider::class,
+        SettlementsServiceProvider::class,
     ],
 
     /*
