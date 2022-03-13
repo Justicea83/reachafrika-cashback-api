@@ -1,24 +1,22 @@
 <?php
 
-namespace App\Entities\Payments\Flutterwave;
+namespace App\Entities\Payments\Paystack;
 
-use App\Entities\Payments\Flutterwave\Config\FlutterwaveConfig;
-use App\Utils\Payments\Flutterwave\FlutterwaveUtility;
+use App\Entities\Payments\Paystack\Config\PaystackConfig;
 use Illuminate\Support\Facades\Http;
 
 /**
  * @property $id
- * @property $bank_name
- * @property $subaccount_id
+ * @property $subaccount_code
+ * @property $settlement_bank
  */
-class SubAccount extends FlutterwaveConfig
+class SubAccount extends PaystackConfig
 {
     function __construct()
     {
         parent::__construct();
-        $this->url = $this->baseUrl . '/subaccounts';
+        $this->url = $this->baseUrl . '/subaccount';
     }
-
 
     public function create(array $data): ?object
     {
@@ -27,7 +25,7 @@ class SubAccount extends FlutterwaveConfig
             $data
         );
 
-        if ($response->successful() && $response->json()['status'] == FlutterwaveUtility::SUCCESS)
+        if ($response->successful() && $response->json()['status'])
             return (object)$response->json()['data'];
 
         return null;

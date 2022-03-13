@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Utils\Payments;
+namespace App\Utils\Payments\Flutterwave;
 
 class FlutterwaveUtility
 {

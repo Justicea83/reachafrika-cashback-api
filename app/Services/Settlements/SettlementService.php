@@ -3,6 +3,8 @@
 namespace App\Services\Settlements;
 
 use App\Entities\Payments\Flutterwave\SubAccount;
+use App\Entities\Payments\Paystack\Bank;
+use App\Entities\Payments\Paystack\SubAccount as PaystackSubAccount;
 use App\Facades\Payments\Flutterwave;
 use App\Models\Merchant\Merchant;
 use App\Models\Misc\Country;
@@ -10,7 +12,8 @@ use App\Models\SettlementBank;
 use App\Utils\Finance\Merchant\Account\AccountUtils;
 use App\Utils\General\AppUtils;
 use App\Utils\MerchantUtils;
-use App\Utils\Payments\FlutterwaveUtility;
+use App\Utils\Payments\Flutterwave\FlutterwaveUtility;
+use App\Utils\Payments\Paystack\PaystackUtility;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
@@ -89,7 +92,7 @@ class SettlementService implements ISettlementService
 
         $extraData = $merchant->extra_data;
 
-        if(isset($extraData['payment_info']['flutterwave'])) return;
+        if (isset($extraData['payment_info']['flutterwave'])) return;
 
         if (!app()->environment('production')) {
             //https://developer.flutterwave.com/docs/integration-guides/testing-helpers/
@@ -114,7 +117,7 @@ class SettlementService implements ISettlementService
 
         $subaccount = (new SubAccount())->create($data);
 
-        if($subaccount == null) return;
+        if ($subaccount == null) return;
 
         $flutterwaveInfo = [
             'sub_account_id' => $subaccount->subaccount_id,
@@ -127,7 +130,72 @@ class SettlementService implements ISettlementService
         $merchant->extra_data = $extraData;
         $merchant->save();
     }
-    private function paystackAddMerchantSubAccount(Merchant $merchant, Country $country, SettlementBank $settlementBank){
 
+    private function paystackAddMerchantSubAccount(Merchant $merchant, Country $country, SettlementBank $settlementBank)
+    {
+        //TODO check if the country is a supported country
+
+        $countryName = $country->name;
+        $accountNo = $settlementBank->account_no;
+        $bankName = $settlementBank->bank_name;
+
+        if (!app()->environment('production')) {
+            $accountNo = '08100000000';
+            $countryName = 'ghana';
+            $bankName = 'Access Bank';
+        }
+
+        $key = Str::of(sprintf('countries_%s', $countryName))->prepend(PaystackUtility::CACHE_PREFIX);
+
+        if (Cache::has($key)) {
+            $data = Cache::get($key);
+        } else {
+            $data = Bank::instance()->fetchAll($countryName);
+
+            if (count($data) <= 0) return;
+            //store the data in the cache
+            Cache::put($key, $data, now()->addHours(24));
+        }
+
+
+        $bank = collect($data)->first(function ($bank) use ($bankName) {
+            return similar_text($bank['name'], $bankName) >= strlen(AppUtils::removeSpacesSpecialChar($bankName));
+        });
+
+
+        ['code' => $code] = $bank;
+
+        $extraData = $merchant->extra_data;
+
+        if (isset($extraData['payment_info']['paystack'])) return;
+
+        $data = [
+            "settlement_bank" => $code,
+            "account_number" => $accountNo,
+            "business_name" => $merchant->name,
+            "domain" => 'test',
+            "primary_contact_email" => $merchant->primary_email,
+            "primary_contact_phone" => $merchant->primary_phone,
+            "percentage_charge" => 0.05
+        ];
+
+        if (!app()->environment('production')) {
+            $data['domain'] = 'test';
+        }
+        /** @var PaystackSubAccount $subaccount */
+        $subaccount = PaystackSubAccount::instance()->create($data);
+
+        if ($subaccount == null) return;
+
+        $paystackInfo = [
+            'sub_account_id' => $subaccount->subaccount_code,
+            'id' => $subaccount->id,
+            'bank_name' => $subaccount->settlement_bank
+        ];
+
+        $extraData['payment_info']['paystack'] = $paystackInfo;
+
+        $merchant->extra_data = $extraData;
+        $merchant->save();
     }
 }
