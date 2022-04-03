@@ -36,7 +36,7 @@ class CreatePermissionTables extends Migration
 
             $this->useCommonColumns($table);
 
-            $table->unique(['name', 'guard_name']);
+            $table->unique(['name', 'guard_name', 'parent_id']);
         });
 
         Schema::create($tableNames['roles'], function (Blueprint $table) use ($teams, $columnNames) {

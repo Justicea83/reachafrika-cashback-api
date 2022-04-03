@@ -52,4 +52,12 @@ class TransactionsService implements ITransactionsService
         });
         return $pagedData;
     }
+
+    public function getTransactionDetail(string $ref): ?TransactionDto
+    {
+        /** @var Transaction $transaction */
+        $transaction = $this->transactionModel->query()->where('id', $ref)->orWhere('reference', $ref)->first();
+        if(is_null($transaction)) return null;
+        return TransactionDto::map($transaction);
+    }
 }

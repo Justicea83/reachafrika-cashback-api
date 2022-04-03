@@ -28,13 +28,12 @@ class DashboardService implements IDashboardService
         $revQuery = DB::select(
             DB::raw("
                 SELECT   CONCAT(c.currency_symbol,' ',FORMAT(SUM(trans.amount),2)) total_revenue
-            FROM transactions trans
-        INNER JOIN merchants m on trans.merchant_id = m.id
-        INNER JOIN countries c on m.country_id = c.id
-            WHERE trans.merchant_id = :merchant_id
-            AND trans.transaction_type = :transaction_type
-        GROUP BY trans.merchant_id
-
+                FROM transactions trans
+                INNER JOIN merchants m on trans.merchant_id = m.id
+                INNER JOIN countries c on m.country_id = c.id
+                WHERE trans.merchant_id = :merchant_id
+                AND trans.transaction_type = :transaction_type
+                GROUP BY trans.merchant_id
             "),
             [
                 'merchant_id' => $user->merchant_id,
@@ -49,7 +48,7 @@ class DashboardService implements IDashboardService
                     number_format($user->merchant->normalAccount->balance, 2)
                 )
             )
-            ->setTotalRevenue($revQuery[0]->total_revenue);
+            ->setTotalRevenue(!is_null($revQuery) && count($revQuery) > 0 ? $revQuery[0]->total_revenue : 0);
     }
 
     public function branchSummary(User $user): array

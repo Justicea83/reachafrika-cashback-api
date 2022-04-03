@@ -15,7 +15,9 @@ use App\Utils\MerchantUtils;
 use App\Utils\Payments\Flutterwave\FlutterwaveUtility;
 use App\Utils\Payments\Paystack\PaystackUtility;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use function Pest\Laravel\get;
 
 class SettlementService implements ISettlementService
 {
@@ -39,10 +41,11 @@ class SettlementService implements ISettlementService
 
         if (is_null($country) || is_null($settlementBank)) return;
 
-        //add subaccount for flutterwave
-        $this->flutterwaveAddMerchantSubAccount($merchant, $country, $settlementBank);
+        Log::info(get_class(), ['message' => 'adding subaccounts']);
         //add subaccount for paystack
         $this->paystackAddMerchantSubAccount($merchant, $country, $settlementBank);
+        //add subaccount for flutterwave
+        $this->flutterwaveAddMerchantSubAccount($merchant, $country, $settlementBank);
         //add for monnify later
     }
 
@@ -113,8 +116,6 @@ class SettlementService implements ISettlementService
 
     private function paystackAddMerchantSubAccount(Merchant $merchant, Country $country, SettlementBank $settlementBank)
     {
-        //TODO check if the country is a supported country
-
         $countryName = $country->name;
         $accountNo = $settlementBank->account_no;
         $bankName = $settlementBank->bank_name;
@@ -157,12 +158,14 @@ class SettlementService implements ISettlementService
             "primary_contact_phone" => $merchant->primary_phone,
             "percentage_charge" => 11.5
         ];
-
+        Log::info(get_class(), ['p' => $data]);
         if (!app()->environment('production')) {
             $data['domain'] = 'test';
         }
         /** @var PaystackSubAccount $subaccount */
         $subaccount = PaystackSubAccount::instance()->create($data);
+
+
 
         if ($subaccount == null) return;
 
