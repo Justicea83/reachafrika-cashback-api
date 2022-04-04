@@ -12,8 +12,11 @@ class CollectionUtils
     const COLLECTION_TYPE_PROFESSIONS = "professions";
     const COLLECTION_TYPE_LANGUAGES = "languages";
     const COLLECTION_TYPE_GENDER = "gender";
+    const COLLECTION_TYPE_EDUCATION = "education";
     const COLLECTION_TYPE_MARITAL_STATUS = "marital.status";
     const COLLECTION_TYPE_CAMPAIGNS = "campaign.types";
+    const COLLECTION_TYPE_MERCHANT_WITHDRAWAL_MODES = 'merchant.withdrawal_modes';
+    const COLLECTION_TYPE_MERCHANT_SETTLEMENT_BANK_PURPOSES = 'merchant.settlement_banks.purposes';
 
     const COLLECTION_TYPES = [
         self::COLLECTION_TYPE_CATEGORY,
@@ -26,5 +29,9 @@ class CollectionUtils
         self::COLLECTION_TYPE_CAMPAIGNS,
         self::COLLECTION_TYPE_GENDER,
         self::COLLECTION_TYPE_MARITAL_STATUS,
+        self::COLLECTION_TYPE_EDUCATION,
+
+        self::COLLECTION_TYPE_MERCHANT_WITHDRAWAL_MODES,
+        self::COLLECTION_TYPE_MERCHANT_SETTLEMENT_BANK_PURPOSES,
     ];
 }

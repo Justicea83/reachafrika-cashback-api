@@ -36,6 +36,11 @@ class MerchantService implements IMerchantService
         $this->paymentModeService = $paymentModeService;
     }
 
+    public function withdrawOutstandingBalance(User $user, array $payload)
+    {
+        ['amount' => $amount, 'payment_mode_id' => $paymentModeId] = $payload;
+    }
+
     /**
      * @throws Exception
      */
@@ -77,7 +82,7 @@ class MerchantService implements IMerchantService
         /** @var Merchant $merchant */
         $merchant = $this->merchantModel->query()->create($payload);
 
-        foreach (AccountUtils::ALL_ACCOUNT_TYPES as $accountType){
+        foreach (AccountUtils::ALL_ACCOUNT_TYPES as $accountType) {
             $merchant->accounts()->create([
                 'currency' => $merchant->country->currency,
                 'type' => $accountType

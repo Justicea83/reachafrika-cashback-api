@@ -13,6 +13,7 @@ Route::prefix('v1/merchants')->group(function () {
     Route::middleware('auth:api')->group(function(){
         Route::get('', [MerchantsController::class, 'getMerchants']);
         Route::get('me', [MerchantsController::class, 'getMyMerchant']);
+        Route::post('withdraw', [MerchantsController::class, 'withdrawOutstandingBalance']);
         Route::get('{id}', [MerchantsController::class, 'getMerchant'])->whereNumber('id');
         Route::get('by-status/{status}', [MerchantsController::class, 'getMerchantsByStatus']);
         Route::put('{id}', [MerchantsController::class, 'updateMerchant'])->whereNumber('id');

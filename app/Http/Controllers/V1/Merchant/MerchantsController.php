@@ -7,6 +7,8 @@ use App\Http\Requests\Auth\CreateUserRequest;
 use App\Http\Requests\Merchant\CreateMerchantBranchRequest;
 use App\Http\Requests\Merchant\CreateMerchantRequest;
 use App\Http\Requests\Merchant\UpdateMerchantRequest;
+use App\Http\Requests\Merchant\WithDrawOutstandingBalanceRequest;
+use App\Models\User;
 use App\Services\Merchant\IMerchantService;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,6 +20,12 @@ class MerchantsController extends Controller
     function __construct(IMerchantService $merchantService)
     {
         $this->merchantService = $merchantService;
+    }
+
+    public function withdrawOutstandingBalance(WithDrawOutstandingBalanceRequest $request): Response
+    {
+        $this->merchantService->withdrawOutstandingBalance($request->user(), $request->only(['payment_mode_id', 'amount']));
+        return $this->noContent();
     }
 
     public function setup(CreateMerchantRequest $request): Response
