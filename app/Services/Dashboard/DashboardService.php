@@ -3,13 +3,22 @@
 namespace App\Services\Dashboard;
 
 use App\Entities\Responses\Dashboard\OverviewResponse;
+use App\Models\Finance\Transaction;
 use App\Models\User;
 use App\Utils\CashbackUtils;
+use App\Utils\Status;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 
 class DashboardService implements IDashboardService
 {
+    private Transaction $transactionModel;
 
+    function __construct(Transaction $transactionModel)
+    {
+        $this->transactionModel = $transactionModel;
+    }
     public function getOverview(User $user): OverviewResponse
     {
         $transQuery = DB::select(
@@ -63,11 +72,12 @@ class DashboardService implements IDashboardService
         WHERE trans.merchant_id = :merchant_id
         AND trans.transaction_type = :transaction_type
         GROUP BY trans.branch_id
+        ORDER BY total_amount DESC
+        LIMIT 10
             "),
             [
                 'merchant_id' => $user->merchant_id,
                 'transaction_type' => CashbackUtils::NAME
-
             ]
         );
 
@@ -86,11 +96,67 @@ class DashboardService implements IDashboardService
             WHERE trans.merchant_id = :merchant_id
             AND trans.transaction_type = :transaction_type
             GROUP BY trans.pos_id,trans.branch_id
+            ORDER BY total_amount DESC
+            LIMIT 10
             "),
             [
                 'merchant_id' => $user->merchant_id,
                 'transaction_type' => CashbackUtils::NAME
             ]
         );
+    }
+
+    /**
+     * @param User $user
+     * @param string $mode General,Branch, POS
+     * @param string|null $start
+     * @param string|null $end
+     * @param array $options
+     * @return array
+     */
+    public function getGraphData(User $user, string $mode, array $options = [], ?string $start = null, ?string $end = null): array
+    {
+        if (is_null($start)) {
+            $startDate = now()->startOfYear();
+        } else {
+            $startDate = Carbon::parse($start);
+        }
+        if (is_null($end)) {
+            $endDate = now()->endOfYear();
+        } else {
+            $endDate = Carbon::parse($end);
+        }
+        switch ($mode){
+            case 'general':
+                $builder =  $this->transactionModel->query()
+                    ->where('merchant_id', $user->merchant_id);
+                    break;
+            case 'branch':
+                $builder =  $this->transactionModel->query()
+                    ->where('branch_id', $options['branch_id'])
+                    ->where('merchant_id', $user->merchant_id);
+                break;
+            case 'pos':
+                $builder =  $this->transactionModel->query()
+                    ->where('pos_id', $options['pos_id'])
+                    ->where('merchant_id', $user->merchant_id);
+                break;
+            default:
+                throw new InvalidArgumentException('Please specify the mode fo the graph data');
+        }
+        return $builder
+            ->where('transaction_type', CashbackUtils::NAME)
+            ->where('status', Status::STATUS_COMPLETED)
+            ->where('created_at', '>=', $startDate->unix())
+            ->where('created_at', '<=', $endDate->unix())
+            ->selectRaw('SUM(amount) as total, MONTHNAME(FROM_UNIXTIME(created_at)) AS month_name,MONTH(FROM_UNIXTIME(created_at)) AS month, YEAR(FROM_UNIXTIME(created_at)) AS year')
+            ->groupBy(DB::raw('month'))
+            ->groupBy(DB::raw('month_name'))
+            ->groupBy(DB::raw('year'))
+            ->get()
+            ->map(fn($transaction) => [
+                $transaction['month_name'] => $transaction['total']
+            ])
+            ->toArray();
     }
 }

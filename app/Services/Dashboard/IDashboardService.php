@@ -12,4 +12,5 @@ interface IDashboardService
     public function getOverview(User $user) : OverviewResponse;
     public function branchSummary(User $user) : array;
     public function posSummary(User $user) : array;
+    public function getGraphData(User $user, string $mode, array $options = [], ?string $start = null, ?string $end = null): array;
 }

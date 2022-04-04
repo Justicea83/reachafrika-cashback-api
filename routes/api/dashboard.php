@@ -9,5 +9,5 @@ Route::prefix('v1/dashboard')
     Route::get('overview',[DashboardController::class,'getOverview']);
     Route::get('pos-summary',[DashboardController::class,'posSummary']);
     Route::get('branch-summary',[DashboardController::class,'branchSummary']);
-
+    Route::post('get-graph-data',[DashboardController::class,'getGraphData']);
 });
