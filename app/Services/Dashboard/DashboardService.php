@@ -50,11 +50,12 @@ class DashboardService implements IDashboardService
             ]
         );
 
-        return OverviewResponse::instance()->setTotalTransactions($transQuery[0]->transactions_count)
+        return OverviewResponse::instance()
+            ->setTotalTransactions($transQuery[0]->transactions_count)
             ->setPendingSettlement(
                 sprintf(
                     "%s %s", $user->merchant->country->currency_symbol,
-                    number_format($user->merchant->normalAccount->balance, 2)
+                    number_format($user->merchant->normalAccount->outstanding_balance, 2)
                 )
             )
             ->setTotalRevenue(!is_null($revQuery) && count($revQuery) > 0 ? $revQuery[0]->total_revenue : 0);
