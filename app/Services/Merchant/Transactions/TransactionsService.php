@@ -5,6 +5,7 @@ namespace App\Services\Merchant\Transactions;
 use App\Dtos\Merchant\Finance\TransactionDto;
 use App\Models\Finance\Transaction;
 use App\Models\User;
+use App\Utils\CashbackUtils;
 use App\Utils\Merchant\TransactionsFilterOptions;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -25,6 +26,7 @@ class TransactionsService implements ITransactionsService
             $this->transactionModel->query()
                 ->where('merchant_id', $user->merchant_id)
                 ->where('pos_id', $user->pos->id)
+                ->where('transaction_type', CashbackUtils::NAME)
                 ->when($filterOptions->amountStart, function (Builder $query) use ($filterOptions) {
                     $query->where('amount', '>=', $filterOptions->amountStart);
                 })
@@ -51,5 +53,13 @@ class TransactionsService implements ITransactionsService
             return TransactionDto::map($transaction);
         });
         return $pagedData;
+    }
+
+    public function getTransactionDetail(string $ref): ?TransactionDto
+    {
+        /** @var Transaction $transaction */
+        $transaction = $this->transactionModel->query()->where('id', $ref)->orWhere('reference', $ref)->first();
+        if(is_null($transaction)) return null;
+        return TransactionDto::map($transaction);
     }
 }

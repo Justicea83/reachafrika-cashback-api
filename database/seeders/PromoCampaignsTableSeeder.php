@@ -2,7 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\Promo\Campaign\PromoCampaign;
 use Illuminate\Database\Seeder;
+use Throwable;
 
 class PromoCampaignsTableSeeder extends Seeder
 {
@@ -13,6 +15,8 @@ class PromoCampaignsTableSeeder extends Seeder
      */
     public function run()
     {
-        \App\Models\Promo\Campaign\PromoCampaign::factory()->count(100)->create();
+        try {
+            PromoCampaign::factory()->count(100)->create();
+        }catch (Throwable $t){}
     }
 }

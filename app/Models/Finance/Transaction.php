@@ -29,6 +29,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property float|mixed $balance_after
  * @property int|mixed $payment_mode_id
  * @property mixed $account
+ * @property mixed $outstanding_balance_before
+ * @property mixed $outstanding_balance_after
+ * @property mixed $tax_percentage
+ * @property PaymentMode $paymentMode
+ * @property Branch $branch
+ * @property User $cashier
+ * @property Pos $pos
+ * @property mixed $service_charge
  */
 class Transaction extends BaseModel
 {
@@ -50,5 +58,10 @@ class Transaction extends BaseModel
     protected static function newFactory(): TransactionFactory
     {
         return TransactionFactory::new();
+    }
+
+    public function paymentMode(): BelongsTo
+    {
+        return $this->belongsTo(PaymentMode::class);
     }
 }

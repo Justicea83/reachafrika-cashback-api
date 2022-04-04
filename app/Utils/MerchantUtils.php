@@ -34,6 +34,7 @@ class MerchantUtils
     {
         $transaction = new Transaction();
         $transaction->balance_before = $account->balance;
+        $transaction->outstanding_balance_before = $account->outstanding_balance;
         $transaction->transaction = $type;
         $transaction->account = $account->type;
         $transaction->given_discount = 0;

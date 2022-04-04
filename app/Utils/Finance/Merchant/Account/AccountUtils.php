@@ -80,9 +80,11 @@ class AccountUtils
         $toAccount->save();
 
         $fromAccountTransaction->balance_after = $fromAccount->balance;
+        $fromAccountTransaction->outstanding_balance_after = $fromAccount->outstanding_balance;
         $fromAccountTransaction->save();
 
         $toAccountTransaction->balance_after = $toAccount->balance;
+        $toAccountTransaction->outstanding_balance_after = $toAccount->outstanding_balance;
         $toAccountTransaction->save();
 
     }

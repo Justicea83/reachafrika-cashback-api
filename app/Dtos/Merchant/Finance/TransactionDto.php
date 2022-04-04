@@ -8,7 +8,6 @@ use Carbon\Carbon;
 
 class TransactionDto extends BaseDto
 {
-
     public int $id;
     public float $amount;
     public string $formatted_amount;
@@ -25,21 +24,28 @@ class TransactionDto extends BaseDto
     public string $branch_name;
     public string $pos;
     public string $cashier;
-    public string $phone;
+    public string $service_charge;
+    public ?string $phone;
+    public ?string $payment_mode;
+    public ?string $date;
 
     /**
      * @param Transaction $model
      * @param array $params
+     * @return TransactionDto
      */
     public function mapFromModel($model, array $params = []): TransactionDto
     {
         $instance = self::instance();
         $instance->id = $model->id;
-        $instance->amount = $model->amount;
+        $instance->amount = number_format($model->amount,2);
         $instance->formatted_amount = sprintf("%s %s", $model->currency_symbol, number_format($model->amount, 2));
+        $instance->date = $model->created_at;
+        $instance->service_charge = number_format($model->service_charge,2);
         $instance->transaction = $model->transaction;
-        $instance->tax_percentage = $model->tax_percentage;
-        $instance->given_discount = $model->given_discount;
+        $instance->tax_percentage = number_format($model->tax_percentage,2);
+        $instance->given_discount = number_format($model->given_discount,2);
+        $instance->payment_mode = !is_null($model->paymentMode) ? $model->paymentMode->display_name : null;
         $instance->balance_before = $model->balance_before;
         $instance->balance_after = $model->balance_after;
         $instance->currency = $model->currency;

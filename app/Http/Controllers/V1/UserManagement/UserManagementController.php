@@ -33,6 +33,12 @@ class UserManagementController extends Controller
         return $this->successResponse($this->userMgmtService->getRoles(\request()->user()));
     }
 
+    public function assignPermissionsToRole(): Response
+    {
+        $this->userMgmtService->assignPermissionsToRole(request()->user(),request()->all());
+        return $this->noContent();
+    }
+
     public function getRolesForUser(int $userId): JsonResponse
     {
         return $this->successResponse($this->userMgmtService->getRolesForUser(\request()->user(),$userId));
@@ -59,6 +65,11 @@ class UserManagementController extends Controller
     public function getUserPermissions(Request $request): JsonResponse
     {
         return $this->successResponse($this->userMgmtService->getUserPermissions($request->user()));
+    }
+
+    public function getAllPermissions(): JsonResponse
+    {
+        return $this->successResponse($this->userMgmtService->getAllPermissions(request()->user()));
     }
 
     public function getUserRoles(Request $request): JsonResponse

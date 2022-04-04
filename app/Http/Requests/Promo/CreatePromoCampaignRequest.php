@@ -44,7 +44,6 @@ class CreatePromoCampaignRequest extends FormRequest
 
     public function withValidator(Validator $validator)
     {
-
         $validator->after(function ($validator) {
             /** @var User $user */
             $user = $this->user();
