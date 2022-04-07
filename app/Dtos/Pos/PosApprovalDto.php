@@ -26,9 +26,8 @@ class PosApprovalDto extends BaseDto
 
     /**
      * @param PosApproval $model
-     * @param array $params
      */
-    public function mapFromModel($model, array $params = []): PosApprovalDto
+    public function mapFromModel($model): PosApprovalDto
     {
         /** @var User $user */
         $user = request()->user();

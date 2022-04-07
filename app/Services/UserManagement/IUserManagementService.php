@@ -18,10 +18,8 @@ interface IUserManagementService
     public function deleteRole(User $user,int $id);
     public function assignRoleToUserByRoleName(int $userId,string $roleName);
     public function assignRoleToUserByRoleId(int $userId,int $roleId);
-    public function assignPermissionsToRole(User $user, array $payload);
     public function getUserRoles(User $user) : Collection;
     public function getUserPermissions(User $user) : Collection;
-    public function getAllPermissions(User $user) : Collection;
     public function assignPermissionToUser(int $userId,string $permissionName);
     public function createUser(array $payload, bool $resetPassword = false) : Model;
     //TODO endpoint to assign permission to role

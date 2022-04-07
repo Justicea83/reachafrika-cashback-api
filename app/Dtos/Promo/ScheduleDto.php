@@ -15,10 +15,9 @@ class ScheduleDto extends BaseDto
 
     /**
      * @param Schedule $model
-     * @param array $params
      * @return void
      */
-    public function mapFromModel($model, array $params = []): ScheduleDto
+    public function mapFromModel($model): ScheduleDto
     {
         return self::instance()->setDay($model->day->description)
             ->setId($model->id)

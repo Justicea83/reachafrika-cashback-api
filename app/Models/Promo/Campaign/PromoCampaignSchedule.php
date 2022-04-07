@@ -15,6 +15,4 @@ class PromoCampaignSchedule extends BaseModel
     {
         return $this->belongsTo(Schedule::class);
     }
-
-
 }

@@ -18,15 +18,8 @@ Route::prefix('v1/promos')->group(function () {
 
         Route::prefix('campaigns')->group(function () {
             Route::post('', [PromosController::class, 'createPromoCampaign']);
-            Route::post('get-impressions-by-budget', [PromosController::class, 'getImpressionsByBudget']);
-            Route::get('potential-count', [PromosController::class, 'getPotentialCount']);
-            Route::post('target-count', [PromosController::class, 'getTargetCount']);
             Route::get('', [PromosController::class, 'getPromoCampaigns']);
             Route::delete('{id}', [PromosController::class, 'deletePromoCampaign'])->whereNumber('id');
-            Route::get('{id}', [PromosController::class, 'getPromoCampaign'])->whereNumber('id');
-            Route::get('{id}/pause', [PromosController::class, 'pausePromoCampaign'])->whereNumber('id');
-            Route::get('{id}/play', [PromosController::class, 'pausePromoCampaign'])->whereNumber('id');
         });
     });
-    Route::get('download/{path}', [PromosController::class, 'downloadBlob'])->name('promo.campaigns.download')->where('path', '(.*)');
 });

@@ -4,10 +4,10 @@
 namespace App\Services\UserManagement;
 
 
-use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Auth\IAuthService;
+use App\Utils\TenantUtils;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -20,15 +20,13 @@ class UserManagementService implements IUserManagementService
 
     private User $userModel;
     private Role $roleModel;
-    private Permission $permissionModel;
     private IAuthService $authService;
 
-    function __construct(User $userModel, Role $roleModel, IAuthService $authService, Permission $permissionModel)
+    function __construct(User $userModel, Role $roleModel, IAuthService $authService)
     {
         $this->userModel = $userModel;
         $this->roleModel = $roleModel;
         $this->authService = $authService;
-        $this->permissionModel = $permissionModel;
     }
 
     public function assignRoleToUserByRoleName(int $userId, string $roleName)
@@ -46,20 +44,11 @@ class UserManagementService implements IUserManagementService
         return $user->getRoleNames();
     }
 
-    private function findUser(int $id): User
-    {
+    private function findUser(int $id) : User{
         /** @var User $user */
         $user = $this->userModel->query()->find($id);
-        if ($user == null) throw new InvalidArgumentException("user not found");
+        if($user == null) throw new InvalidArgumentException("user not found");
         return $user;
-    }
-
-    private function findRole(int $id): Role
-    {
-        /** @var Role $role */
-        $role = $this->roleModel->query()->find($id);
-        if ($role == null) throw new InvalidArgumentException("role not found");
-        return $role;
     }
 
     public function assignPermissionToUser(int $userId, string $permissionName)
@@ -69,7 +58,7 @@ class UserManagementService implements IUserManagementService
 
     public function getUserPermissions(User $user): Collection
     {
-        return $user->getAllPermissions()->map(fn($permission) => $permission['name']);
+        return $user->getPermissionNames();
     }
 
     public function createUser(array $payload, bool $resetPassword = false): Model
@@ -127,7 +116,7 @@ class UserManagementService implements IUserManagementService
         $page = request()->query->get('page') ?? 1;
         return $this->userModel->query()
             ->with(['roles'])
-            ->where('merchant_id', $user->merchant_id)
+            ->where('merchant_id',$user->merchant_id)
             ->paginate($pageSize, ['*'], 'page', $page);
     }
 
@@ -135,8 +124,8 @@ class UserManagementService implements IUserManagementService
     {
         return $this->userModel->query()
             ->with(['roles'])
-            ->where('merchant_id', $user->merchant_id)
-            ->where('id', $id)
+            ->where('merchant_id',$user->merchant_id)
+            ->where('id',$id)
             ->first();
     }
 
@@ -144,11 +133,11 @@ class UserManagementService implements IUserManagementService
     {
         $user = $this->findUser($id);
         //update only the first name and last name fields
-        $firstName = Arr::get($payload, 'first_name');
-        $lastName = Arr::get($payload, 'last_name');
-        if ($firstName != null) $user->first_name = $firstName;
-        if ($lastName != null) $user->last_name = $lastName;
-        if ($user->isDirty()) $user->save();
+        $firstName = Arr::get($payload,'first_name');
+        $lastName = Arr::get($payload,'last_name');
+        if($firstName != null)$user->first_name = $firstName;
+        if($lastName != null)$user->last_name = $lastName;
+        if($user->isDirty())$user->save();
     }
 
     public function suspendUser(User $user, int $userId, array $payload)
@@ -157,18 +146,5 @@ class UserManagementService implements IUserManagementService
         $suspendUntil = Carbon::parse($payload['suspended_until']);
         $user->suspended_until = $suspendUntil->timestamp;
         $user->save();
-    }
-
-    public function getAllPermissions(User $user): Collection
-    {
-        return $this->permissionModel->query()->whereNull('parent_id')->get();
-    }
-
-
-    public function assignPermissionsToRole(User $user, array $payload)
-    {
-        ['permissions' => $permissions, 'role_id' => $roleId] = $payload;
-        $role = $this->findRole($roleId);
-        $role->givePermissionTo($permissions);
     }
 }

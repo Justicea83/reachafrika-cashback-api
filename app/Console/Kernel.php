@@ -3,8 +3,6 @@
 namespace App\Console;
 
 use App\Console\Commands\Notifications\PruneFcmTokens;
-use App\Console\Commands\Promo\ProcessPromoCampaigns;
-use App\Console\Commands\Promo\SchedulePromoCampaign;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -18,9 +16,6 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('passport:purge')->hourly();
         $schedule->command(PruneFcmTokens::class)->daily()->withoutOverlapping()->runInBackground();
-
-        $schedule->command(SchedulePromoCampaign::class)->everyMinute()->withoutOverlapping()->runInBackground();
-        $schedule->command(ProcessPromoCampaigns::class)->everyTwoMinutes()->withoutOverlapping()->runInBackground();
 
     }
 
