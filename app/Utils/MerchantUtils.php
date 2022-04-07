@@ -30,24 +30,25 @@ class MerchantUtils
         return Merchant::query()->find($id);
     }
 
-    public static function createTransaction(User $user, string $type, Account $account, string $transactionType, string $status, float $amount, string $groupReference, string $reference, ?Pos $pos = null): Transaction
+    public static function createTransaction(Merchant $merchant,?User $user, string $type, Account $account, string $transactionType, string $status, float $amount, string $groupReference, string $reference, ?Pos $pos = null): Transaction
     {
         $transaction = new Transaction();
         $transaction->balance_before = $account->balance;
+        $transaction->outstanding_balance_before = $account->outstanding_balance;
         $transaction->transaction = $type;
         $transaction->account = $account->type;
         $transaction->given_discount = 0;
         $transaction->group_reference = $groupReference;
         $transaction->status = $status;
         $transaction->platform = AppUtils::APP_PLATFORM;
-        $transaction->merchant_id = $user->merchant->id;
+        $transaction->merchant_id = $merchant->id;
         $transaction->branch_id = $pos->branch_id ?? null;
         $transaction->pos_id = $pos->id ?? null;
         $transaction->reference = $reference;
         $transaction->transaction_type = $transactionType;
-        $transaction->currency = $user->merchant->country->currency;
-        $transaction->currency_symbol = $user->merchant->country->currency_symbol;
-        $transaction->created_by = $user->id;
+        $transaction->currency = $merchant->country->currency;
+        $transaction->currency_symbol = $merchant->country->currency_symbol;
+        $transaction->created_by = $user->id ?? null;
         $transaction->amount = $amount;
         $transaction->save();
         return $transaction;

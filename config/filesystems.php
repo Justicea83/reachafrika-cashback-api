@@ -39,7 +39,10 @@ return [
             'driver' => 'local',
             'root' => storage_path('app/merchants'),
         ],
-
+        'files' => [
+            'driver' => 'local',
+            'root' => storage_path('app/files'),
+        ],
         'qr-codes' => [
             'driver' => 'local',
             'root' => storage_path('app\\public\\qr-codes'),
@@ -47,10 +50,11 @@ return [
             'visibility' => 'public',
         ],
 
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => env('APP_URL').'/storage',
+            'url' => env('APP_URL') . '/storage',
             'visibility' => 'public',
         ],
 

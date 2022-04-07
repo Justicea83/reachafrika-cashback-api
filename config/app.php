@@ -3,10 +3,12 @@
 use App\Providers\CategoryServiceProvider;
 use App\Providers\CollectionServiceProvider;
 use App\Providers\CoreServiceProvider;
+use App\Providers\DashboardServiceProvider;
 use App\Providers\MerchantServiceProvider;
 use App\Providers\NotificationServiceProvider;
 use App\Providers\PromoServiceProvider;
 use App\Providers\SettingsServiceProvider;
+use App\Providers\SettlementsServiceProvider;
 use App\Providers\UserManagementServiceProvider;
 
 return [
@@ -172,6 +174,7 @@ return [
         Illuminate\View\ViewServiceProvider::class,
         ProtoneMedia\LaravelFFMpeg\Support\ServiceProvider::class,
         Intervention\Image\ImageServiceProvider::class,
+        Unicodeveloper\Paystack\PaystackServiceProvider::class,
         /*
          * Package Service Providers...
          */
@@ -191,7 +194,10 @@ return [
         SettingsServiceProvider::class,
         CoreServiceProvider::class,
         NotificationServiceProvider::class,
-        PromoServiceProvider::class
+        PromoServiceProvider::class,
+        DashboardServiceProvider::class,
+        SettlementsServiceProvider::class,
+        Maatwebsite\Excel\ExcelServiceProvider::class,
     ],
 
     /*
@@ -247,6 +253,8 @@ return [
         'View' => Illuminate\Support\Facades\View::class,
         'FFMpeg' => ProtoneMedia\LaravelFFMpeg\Support\FFMpeg::class,
         'Image' => Intervention\Image\Facades\Image::class,
+        'Paystack' => Unicodeveloper\Paystack\Facades\Paystack::class,
+        'Excel' => Maatwebsite\Excel\Facades\Excel::class,
     ],
 
 ];

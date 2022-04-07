@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * @property mixed $balance
  * @property mixed $type
+ * @property mixed $outstanding_balance
  */
 class Account extends BaseModel
 {

@@ -45,4 +45,6 @@ interface IMerchantService
 
     public function changeBranchStatus(User $user,int $branchId, string $status);
 
+    public function withdrawOutstandingBalance(User $user, array $payload);
+
 }

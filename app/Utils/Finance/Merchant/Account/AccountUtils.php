@@ -4,6 +4,7 @@ namespace App\Utils\Finance\Merchant\Account;
 
 use App\Exceptions\Merchant\AccountNotFoundException;
 use App\Models\Finance\Account;
+use App\Models\Merchant\Merchant;
 use App\Models\User;
 use App\Utils\Finance\Merchant\TransactionUtils;
 use App\Utils\General\MiscUtils;
@@ -27,7 +28,7 @@ class AccountUtils
     /**
      * @throws AccountNotFoundException
      */
-    public static function intraAccountMoneyMovement(User $user, string $from, string $to, float $amount)
+    public static function intraAccountMoneyMovement(Merchant $merchant,User $user, string $from, string $to, float $amount)
     {
         /** @var Account $fromAccount */
         $fromAccount = Account::query()->where('type', strtolower($from))
@@ -47,6 +48,7 @@ class AccountUtils
         $groupReference = MiscUtils::getToken(32);
 
         $fromAccountTransaction = MerchantUtils::createTransaction(
+            $merchant,
             $user,
             TransactionUtils::TRANSACTION_DEBIT,
             $fromAccount,
@@ -54,10 +56,12 @@ class AccountUtils
             Status::STATUS_COMPLETED,
             $amount,
             $groupReference,
-            MiscUtils::getToken(16)
+            MiscUtils::getToken(16),
+            $user->pos
         );
 
         $toAccountTransaction = MerchantUtils::createTransaction(
+            $merchant,
             $user,
             TransactionUtils::TRANSACTION_CREDIT,
             $toAccount,
@@ -65,7 +69,8 @@ class AccountUtils
             Status::STATUS_COMPLETED,
             $amount,
             $groupReference,
-            MiscUtils::getToken(16)
+            MiscUtils::getToken(16),
+            $user->pos
         );
 
         $fromAccount->balance -= $amount;
@@ -75,9 +80,11 @@ class AccountUtils
         $toAccount->save();
 
         $fromAccountTransaction->balance_after = $fromAccount->balance;
+        $fromAccountTransaction->outstanding_balance_after = $fromAccount->outstanding_balance;
         $fromAccountTransaction->save();
 
         $toAccountTransaction->balance_after = $toAccount->balance;
+        $toAccountTransaction->outstanding_balance_after = $toAccount->outstanding_balance;
         $toAccountTransaction->save();
 
     }

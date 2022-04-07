@@ -42,6 +42,7 @@ class CreatePromoCampaignsTable extends Migration
             $table->integer('min_age')->nullable();
             $table->integer('max_age')->nullable();
             $table->boolean('blocked')->default(false);
+            $table->integer('duration')->default(0);
             $table->boolean('locked')->comment('use this field to remove the campaign from the stream temporary')->default(false);
             $table->unsignedBigInteger('delete_requested_at')->comment('this field will be used to remove the campaign from the stream after it has been locked')->nullable();
             $table->foreignId('promo_frequency_id')->constrained();
