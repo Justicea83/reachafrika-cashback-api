@@ -74,7 +74,6 @@ class AuthService implements IAuthService
     {
         /** @var User $user */
         $user = $this->userModel->query()->where('email', $email)->first();
-        if($user == null) return;
         $token = Password::createToken($user);
         Mail::to($user)->queue(new ForgotPasswordMail($user, "$token?email=$user->email"));
     }

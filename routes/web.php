@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\V1\Promo\PromosController;
 use App\Models\User;
 use App\Services\Merchant\Reports\IReportsService;
 use App\Services\Merchant\Reports\ReportsService;
@@ -25,5 +24,3 @@ Route::get('/pos-summary-report', function () {
     return view('reports.merchants.pos.pos-summary-report', ['report' => $service->posSummaryReport(User::query()->find(1), '2021-01-01','2022-02-06')]);
 
 });
-
-

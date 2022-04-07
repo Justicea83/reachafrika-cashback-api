@@ -4,7 +4,6 @@ namespace App\Console\Commands\Notifications;
 
 use App\Services\Notifications\Fcm\IFcmNotificationService;
 use Illuminate\Console\Command;
-use Symfony\Component\Console\Command\Command as CommandAlias;
 
 class PruneFcmTokens extends Command
 {
@@ -32,10 +31,14 @@ class PruneFcmTokens extends Command
         parent::__construct();
     }
 
-
-    public function handle(IFcmNotificationService $fcmNotificationService): int
+    /**
+     * Execute the console command.
+     *
+     * @return int
+     */
+    public function handle(IFcmNotificationService $fcmNotificationService)
     {
         $fcmNotificationService->pruneNotificationTokens();
-        return CommandAlias::SUCCESS;
+        return Command::SUCCESS;
     }
 }

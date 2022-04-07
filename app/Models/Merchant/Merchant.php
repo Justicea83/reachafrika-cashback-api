@@ -6,7 +6,6 @@ use App\Models\BaseModel;
 use App\Models\Category\MerchantCategory;
 use App\Models\Finance\Account;
 use App\Models\Misc\Country;
-use App\Models\SettlementBank;
 use App\Models\User;
 use App\Utils\Finance\Merchant\Account\AccountUtils;
 use ArrayAccess;
@@ -35,9 +34,6 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property Account $normalAccount
  * @property Account $rewardAccount
  * @property Account $escrowAccount
- * @property SettlementBank $settlementBank
- * @property mixed $primary_email
- * @property mixed $primary_phone
  */
 class Merchant extends BaseModel
 {
@@ -47,7 +43,7 @@ class Merchant extends BaseModel
 
     public function mainBranch(): BelongsTo
     {
-        return $this->belongsTo(Branch::class, 'main_branch_id');
+        return $this->belongsTo(Branch::class,'main_branch_id');
     }
 
     public function users(): HasMany
@@ -62,7 +58,7 @@ class Merchant extends BaseModel
 
     public function category(): BelongsTo
     {
-        return $this->belongsTo(MerchantCategory::class, 'category_id');
+        return $this->belongsTo(MerchantCategory::class,'category_id');
     }
 
     protected static function newFactory(): MerchantFactory
@@ -106,21 +102,5 @@ class Merchant extends BaseModel
     public function escrowAccount(): HasOne
     {
         return $this->hasOne(Account::class)->where('type', AccountUtils::ACCOUNT_TYPE_ESCROW);
-    }
-
-    public function settlementBank(): HasOne
-    {
-        return $this->hasOne(SettlementBank::class);
-    }
-
-    public function getExtraDataAttribute($value)
-    {
-        if (is_null($value)) return [];
-        return json_decode($value, true);
-    }
-
-    public function setExtraDataAttribute($value)
-    {
-        $this->attributes['extra_data'] = json_encode($value);
     }
 }
