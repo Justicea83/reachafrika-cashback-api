@@ -16,7 +16,10 @@ Route::prefix('v1/settings')
         //settlement banks
         Route::prefix('settlement-banks')->group(function () {
             Route::post('', [SettingsController::class, 'createSettlementBank']);
-            Route::put('', [SettingsController::class, 'updateSettlementBank']);
+            Route::put('{id}', [SettingsController::class, 'updateSettlementBank'])->whereNumber('id');
+            Route::get('{id}/purposes', [SettingsController::class, 'getSettlementBankPurposes'])->whereNumber('id');
+            Route::post('{id}/purposes', [SettingsController::class, 'createSettlementBankPurpose'])->whereNumber('id');
+            Route::delete('{id}/purposes/{purposeId}', [SettingsController::class, 'removeSettlementBankPurpose'])->whereNumber('id')->whereNumber('purposeId');
             Route::get('', [SettingsController::class, 'getSettlementBank']);
         });
 

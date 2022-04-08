@@ -8,7 +8,7 @@ use App\Utils\SettlementBankUtils;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
-class CreateSettlementBankRequest extends FormRequest
+class CreateSettlementBankPurposeRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -28,9 +28,6 @@ class CreateSettlementBankRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'bank_name' => 'required',
-            'account_no' => 'required',
-            'account_name' => 'required',
             'purpose' => 'required'
         ];
     }
@@ -54,5 +51,4 @@ class CreateSettlementBankRequest extends FormRequest
             }
         });
     }
-
 }
