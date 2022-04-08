@@ -7,8 +7,10 @@ use App\Models\Category\MerchantCategory;
 use App\Models\Finance\Account;
 use App\Models\Misc\Country;
 use App\Models\SettlementBank;
+use App\Models\SettlementBankPurpose;
 use App\Models\User;
 use App\Utils\Finance\Merchant\Account\AccountUtils;
+use App\Utils\SettlementBankUtils;
 use ArrayAccess;
 use Database\Factories\MerchantFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -108,9 +110,15 @@ class Merchant extends BaseModel
         return $this->hasOne(Account::class)->where('type', AccountUtils::ACCOUNT_TYPE_ESCROW);
     }
 
-    public function settlementBank(): HasOne
+    public function settlementBank(): ?HasOne
     {
-        return $this->hasOne(SettlementBank::class);
+        /** @var SettlementBankPurpose $purpose */
+        $purpose = SettlementBankPurpose::query()
+            ->where('merchant_id', $this->id)
+            ->where('purpose', SettlementBankUtils::SETTLEMENT_PURPOSE_COLLECTION)
+            ->first();
+        if ($purpose == null) return null;
+        return $this->hasOne(SettlementBank::class)->where('id', $purpose->settlement_bank_id);
     }
 
     public function getExtraDataAttribute($value)

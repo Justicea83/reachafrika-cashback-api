@@ -1,5 +1,4 @@
 <?php
-
 use App\Traits\CommonColumns;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;

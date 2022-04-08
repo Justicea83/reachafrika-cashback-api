@@ -59,6 +59,8 @@ class CollectionService implements ICollectionService
                 return collect(['all', 'phd', 'mphil', 'degree', 'high School']);
             case CollectionUtils::COLLECTION_TYPE_MERCHANT_SETTLEMENT_BANK_PURPOSES:
                 return collect(SettlementBankUtils::SETTLEMENT_PURPOSES);
+            case CollectionUtils::COLLECTION_TYPE_MERCHANT_SETTLEMENT_BANK_TYPES:
+                return collect(SettlementBankUtils::SETTLEMENT_TYPES);
             case CollectionUtils::COLLECTION_TYPE_MERCHANT_WITHDRAWAL_MODES:
                 return $this->paymentModeModel->query()->whereIn('name', [PaymentModeUtils::PAYMENT_MODE_BANK, PaymentModeUtils::PAYMENT_MODE_MOMO])->get()->map(fn(PaymentMode $paymentMode) => [
                     'id' => $paymentMode->id,

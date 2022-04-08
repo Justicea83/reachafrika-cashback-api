@@ -17,6 +17,7 @@ class CollectionUtils
     const COLLECTION_TYPE_CAMPAIGNS = "campaign.types";
     const COLLECTION_TYPE_MERCHANT_WITHDRAWAL_MODES = 'merchant.withdrawal_modes';
     const COLLECTION_TYPE_MERCHANT_SETTLEMENT_BANK_PURPOSES = 'merchant.settlement_banks.purposes';
+    const COLLECTION_TYPE_MERCHANT_SETTLEMENT_BANK_TYPES = 'merchant.settlement_banks.types';
 
     const COLLECTION_TYPES = [
         self::COLLECTION_TYPE_CATEGORY,
@@ -32,6 +33,7 @@ class CollectionUtils
         self::COLLECTION_TYPE_EDUCATION,
 
         self::COLLECTION_TYPE_MERCHANT_WITHDRAWAL_MODES,
+        self::COLLECTION_TYPE_MERCHANT_SETTLEMENT_BANK_PURPOSES,
         self::COLLECTION_TYPE_MERCHANT_SETTLEMENT_BANK_PURPOSES,
     ];
 }

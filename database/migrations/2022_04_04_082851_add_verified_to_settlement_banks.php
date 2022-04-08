@@ -15,6 +15,7 @@ class AddVerifiedToSettlementBanks extends Migration
     {
         Schema::table('settlement_banks', function (Blueprint $table) {
             $table->boolean('verified')->after('merchant_id')->default(false);
+            $table->unique(['account_no','account_name','bank_name'], 'all_unique_constraint');
         });
     }
 
@@ -27,6 +28,7 @@ class AddVerifiedToSettlementBanks extends Migration
     {
         Schema::table('settlement_banks', function (Blueprint $table) {
             $table->dropColumn('verified');
+            $table->dropIndex('all_unique_constraint');
         });
     }
 }
