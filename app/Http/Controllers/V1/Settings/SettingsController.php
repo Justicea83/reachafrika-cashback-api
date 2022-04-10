@@ -43,12 +43,16 @@ class SettingsController extends Controller
     //settlement banks
     public function createSettlementBank(CreateSettlementBankRequest $request): JsonResponse
     {
-        return $this->successResponse($this->settlementBankService->addSettlementBank($request->user(), $request->only(['bank_name', 'account_no', 'account_name', 'purpose'])), Response::HTTP_CREATED);
+        return $this->successResponse(
+            $this->settlementBankService->addSettlementBank(
+                $request->user(), $request->only(['bank_name', 'account_no', 'account_name', 'purpose', 'payment_mode_id','config'])
+            ), Response::HTTP_CREATED
+        );
     }
 
     public function updateSettlementBank(UpdateSettlementBankRequest $request, int $id): Response
     {
-        $this->settlementBankService->updateSettlementBank($request->user(), $id, $request->only(['bank_name', 'account_no', 'account_name']));
+        $this->settlementBankService->updateSettlementBank($request->user(), $id, $request->only(['bank_name', 'account_no', 'account_name','payment_mode_id', 'config']));
         return $this->noContent();
     }
 
