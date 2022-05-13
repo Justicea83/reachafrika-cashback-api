@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Utils\General\AppUtils;
 use App\Utils\General\MiscUtils;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class MerchantUtils
 {
@@ -28,6 +29,17 @@ class MerchantUtils
     public static function findById(int $id): ?Model
     {
         return Merchant::query()->find($id);
+    }
+
+    public static function getMerchantProfileId(User $user)
+    {
+        $profileDetails = DB::connection('reachafrika_core')->table('countries')
+            ->where('currency', $user->merchant->country->currency)
+            ->join('profiles', 'profiles.avatar', 'countries.id')
+            ->select('profiles.id as merchant_profile')
+            ->first();
+
+        return $profileDetails->merchant_profile ?? 0;
     }
 
     public static function createTransaction(Merchant $merchant,?User $user, string $type, Account $account, string $transactionType, string $status, float $amount, string $groupReference, string $reference, ?Pos $pos = null): Transaction

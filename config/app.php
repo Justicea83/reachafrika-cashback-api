@@ -4,6 +4,7 @@ use App\Providers\CategoryServiceProvider;
 use App\Providers\CollectionServiceProvider;
 use App\Providers\CoreServiceProvider;
 use App\Providers\DashboardServiceProvider;
+use App\Providers\FinanceServiceProvider;
 use App\Providers\MerchantServiceProvider;
 use App\Providers\NotificationServiceProvider;
 use App\Providers\PromoServiceProvider;
@@ -197,6 +198,7 @@ return [
         PromoServiceProvider::class,
         DashboardServiceProvider::class,
         SettlementsServiceProvider::class,
+        FinanceServiceProvider::class,
         Maatwebsite\Excel\ExcelServiceProvider::class,
     ],
 

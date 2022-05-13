@@ -30,7 +30,7 @@ class Permission extends SpatiePermission
         $permission = [
             'name' => strtolower($name),
             'display_name'=>Str::title(str_replace('_',' ',$name)),
-            'guard_name' => 'web'
+            'guard_name' => 'api'
         ];
         if($parent){
             $permission['parent_id'] = $parent;

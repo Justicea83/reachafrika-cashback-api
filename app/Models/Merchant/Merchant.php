@@ -6,8 +6,9 @@ use App\Models\BaseModel;
 use App\Models\Category\MerchantCategory;
 use App\Models\Finance\Account;
 use App\Models\Misc\Country;
-use App\Models\SettlementBank;
-use App\Models\SettlementBankPurpose;
+use App\Models\Settlements\Settlement;
+use App\Models\Settlements\SettlementBank;
+use App\Models\Settlements\SettlementBankPurpose;
 use App\Models\User;
 use App\Utils\Finance\Merchant\Account\AccountUtils;
 use App\Utils\SettlementBankUtils;
@@ -16,6 +17,7 @@ use Database\Factories\MerchantFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Collection;
 
 /**
  * @property mixed id
@@ -40,6 +42,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property SettlementBank $settlementBank
  * @property mixed $primary_email
  * @property mixed $primary_phone
+ * @property Collection $settlementBanks
  */
 class Merchant extends BaseModel
 {
@@ -121,6 +124,11 @@ class Merchant extends BaseModel
         return $this->hasOne(SettlementBank::class)->where('id', $purpose->settlement_bank_id);
     }
 
+    public function settlementBanks(): HasMany
+    {
+        return $this->hasMany(SettlementBank::class);
+    }
+
     public function getExtraDataAttribute($value)
     {
         if (is_null($value)) return [];
@@ -130,5 +138,15 @@ class Merchant extends BaseModel
     public function setExtraDataAttribute($value)
     {
         $this->attributes['extra_data'] = json_encode($value);
+    }
+
+    public function settlements(): HasMany
+    {
+        return $this->hasMany(Settlement::class);
+    }
+
+    public function settlementBankPurposes(): HasMany
+    {
+        return $this->hasMany(SettlementBankPurpose::class);
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Services\Settings\SettlementBank;
 
-use App\Models\SettlementBank;
+use App\Models\Settlements\SettlementBank;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
@@ -22,8 +22,11 @@ class SettlementBankService implements ISettlementBankService
     {
         if ($user->merchant_id == null) throw new InvalidArgumentException("you are not a merchant");
 
-        $data = Arr::only($payload, ['account_name', 'account_no', 'bank_name']);
+        $data = Arr::only($payload, ['account_name', 'account_no', 'bank_name', 'payment_mode_id']);
         $data['merchant_id'] = $user->merchant_id;
+        $data['extra_info'] = json_encode([
+            'setup' => $payload['config']
+        ]);
         /** @var SettlementBank $settlementBank */
         $settlementBank = $this->settlementBankModel->query()->firstOrCreate($data);
 
@@ -37,7 +40,7 @@ class SettlementBankService implements ISettlementBankService
 
     private function getSettlementBank(User $user, int $id): Model
     {
-        $bank = $this->settlementBankModel->query()->with(['purposes'])
+        $bank = $this->settlementBankModel->query()->with(['purposes', 'paymentMode'])
             ->where('merchant_id', $user->merchant_id)
             ->find($id);
         if (is_null($bank)) throw new InvalidArgumentException("settlement bank not found");
@@ -49,18 +52,31 @@ class SettlementBankService implements ISettlementBankService
         $accountName = Arr::get($payload, 'account_name');
         $accountNo = Arr::get($payload, 'account_no');
         $bankName = Arr::get($payload, 'bank_name');
+        $paymentModeId = Arr::get($payload, 'payment_mode_id');
+        $config = Arr::get($payload, 'config');
+
         /** @var SettlementBank $settlementBank */
         $settlementBank = $this->getSettlementBank($user, $id);
         if ($accountName != null) $settlementBank->account_name = $accountName;
         if ($accountNo != null) $settlementBank->account_no = $accountNo;
         if ($bankName != null) $settlementBank->bank_name = $bankName;
+        if ($paymentModeId != null) $settlementBank->payment_mode_id = $paymentModeId;
+
+        if ($config != null) {
+            $extra_info = $settlementBank->extra_info;
+            if (!is_array($extra_info)) {
+                $extra_info = json_decode($extra_info, true);
+            }
+            $extra_info['setup'] = $config;
+            $settlementBank->extra_info = json_encode($extra_info);
+        }
 
         if ($settlementBank->isDirty()) $settlementBank->save();
     }
 
     public function getSettlementBanks(User $user): Collection
     {
-        return $this->settlementBankModel->query()->where('merchant_id', $user->merchant_id)->get();
+        return $this->settlementBankModel->query()->with(['purposes', 'paymentMode'])->where('merchant_id', $user->merchant_id)->get();
     }
 
     public function removeSettlementBank(User $user, int $id)

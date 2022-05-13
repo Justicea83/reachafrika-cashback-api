@@ -14,6 +14,8 @@ class AddVerifiedToSettlementBanks extends Migration
     public function up()
     {
         Schema::table('settlement_banks', function (Blueprint $table) {
+            $table->longText('extra_info')->after('merchant_id')->nullable();
+            $table->foreignId('payment_mode_id')->after('merchant_id')->nullable()->constrained();
             $table->boolean('verified')->after('merchant_id')->default(false);
             $table->unique(['account_no','account_name','bank_name'], 'all_unique_constraint');
         });
@@ -28,6 +30,9 @@ class AddVerifiedToSettlementBanks extends Migration
     {
         Schema::table('settlement_banks', function (Blueprint $table) {
             $table->dropColumn('verified');
+            $table->dropForeign(['payment_mode_id']);
+            $table->dropColumn('payment_mode_id');
+            $table->dropIndex('settlement_banks_payment_mode_id_foreign');
             $table->dropIndex('all_unique_constraint');
         });
     }

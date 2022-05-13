@@ -6,6 +6,7 @@ abstract class FlutterwaveConfig
 {
     protected string $publicKey;
     protected string $secretKey;
+    protected string $encryptionKey;
     protected string $baseUrl;
     protected string $url;
 
@@ -18,6 +19,6 @@ abstract class FlutterwaveConfig
         $this->publicKey = config('flutterwave.publicKey');
         $this->secretKey = config('flutterwave.secretKey');
         $this->baseUrl = config('flutterwave.baseUrl');
+        $this->encryptionKey = config('flutterwave.secretHash');
     }
-
 }

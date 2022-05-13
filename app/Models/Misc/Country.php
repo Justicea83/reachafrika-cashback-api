@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property mixed $currency
  * @property mixed $name
  * @property mixed $iso2
+ * @property mixed $id
  */
 class Country extends Model
 {

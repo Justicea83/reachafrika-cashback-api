@@ -59,7 +59,7 @@ class PermissionsTableSeeder extends Seeder
                 'description' => 'Manages Dashboard Info',
                 'children' => [
                     [
-                        'name' => 'view_all'
+                        'name' => 'view_all_overview'
                     ],
                     [
                         'name' => 'view_total_revenue'
@@ -83,7 +83,7 @@ class PermissionsTableSeeder extends Seeder
                 'description' => 'Manages Transactions',
                 'children' => [
                     [
-                        'name' => 'view_all'
+                        'name' => 'view_all_transactions'
                     ]
                 ]
             ],
@@ -92,7 +92,7 @@ class PermissionsTableSeeder extends Seeder
                 'description' => 'Manages Promo Campaigns',
                 'children' => [
                     [
-                        'name' => 'view_all'
+                        'name' => 'view_all_promos'
                     ],
                     [
                         'name' => 'view_ongoing_campaigns'
@@ -116,7 +116,7 @@ class PermissionsTableSeeder extends Seeder
                 'description' => 'Manages Reviews',
                 'children' => [
                     [
-                        'name' => 'view_all'
+                        'name' => 'view_all_reviews'
                     ],
                     [
                         'name' => 'reply_comments'
@@ -128,7 +128,7 @@ class PermissionsTableSeeder extends Seeder
                 'description' => 'Manages Settlements',
                 'children' => [
                     [
-                        'name' => 'view_all'
+                        'name' => 'view_all_settlements'
                     ],
                 ]
             ],

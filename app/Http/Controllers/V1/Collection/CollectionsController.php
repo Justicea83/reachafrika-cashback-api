@@ -20,6 +20,11 @@ class CollectionsController extends Controller
         return $this->successResponse($this->collectionService->loadCollection($type, []));
     }
 
+    public function loadCollectionsAuth(string $type): JsonResponse
+    {
+        return $this->successResponse($this->collectionService->loadAuthCollection(request()->user(),$type));
+    }
+
     public function loadCollectionsLevel2(string $type, int $typeId): JsonResponse
     {
         return $this->successResponse($this->collectionService->loadCollection($type, ['type_id' => $typeId]));
@@ -28,5 +33,10 @@ class CollectionsController extends Controller
     public function getCollectionTypes(): JsonResponse
     {
         return $this->successResponse($this->collectionService->getCollectionTypes());
+    }
+
+    public function getCollectionTypesAuth(): JsonResponse
+    {
+        return $this->successResponse($this->collectionService->getAuthCollectionTypes());
     }
 }
