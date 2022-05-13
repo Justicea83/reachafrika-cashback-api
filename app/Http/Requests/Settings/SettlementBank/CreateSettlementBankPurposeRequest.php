@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\Settings\SettlementBank;
 
-use App\Models\SettlementBankPurpose;
+use App\Models\Settlements\SettlementBankPurpose;
 use App\Models\User;
 use App\Utils\SettlementBankUtils;
 use Illuminate\Foundation\Http\FormRequest;

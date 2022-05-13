@@ -2,7 +2,7 @@
 
 namespace App\Services\Settings\SettlementBank;
 
-use App\Models\SettlementBank;
+use App\Models\Settlements\SettlementBank;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;

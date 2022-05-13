@@ -3,7 +3,7 @@
 namespace App\Http\Requests\Settings\SettlementBank;
 
 use App\Models\Finance\PaymentMode;
-use App\Models\SettlementBankPurpose;
+use App\Models\Settlements\SettlementBankPurpose;
 use App\Models\User;
 use App\Utils\Finance\PaymentMode\PaymentModeUtils;
 use App\Utils\SettlementBankUtils;

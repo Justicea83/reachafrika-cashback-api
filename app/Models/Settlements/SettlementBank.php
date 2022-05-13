@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Settlements;
 
 use App\Models\Finance\PaymentMode;
 use App\Traits\UnixTimestampsFormat;
+use ArrayAccess;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,8 +19,9 @@ use Illuminate\Support\Collection;
  * @property bool $verified
  * @property mixed $id
  * @property Collection $purposes
- * @property array|\ArrayAccess|mixed $payment_mode_id
+ * @property array|ArrayAccess|mixed $payment_mode_id
  * @property mixed $extra_info
+ * @property PaymentMode $paymentMode
  */
 class SettlementBank extends Model
 {
@@ -37,6 +39,13 @@ class SettlementBank extends Model
     {
         return $this->hasMany(SettlementBankPurpose::class);
     }
+
+    public function getExtraInfoAttribute($value)
+    {
+        if (is_null($value)) return [];
+        return json_decode($value, true);
+    }
+
 
     public function paymentMode(): BelongsTo
     {

@@ -14,7 +14,7 @@ class AddVerifiedToSettlementBanks extends Migration
     public function up()
     {
         Schema::table('settlement_banks', function (Blueprint $table) {
-            $table->json('extra_info')->after('merchant_id')->nullable();
+            $table->longText('extra_info')->after('merchant_id')->nullable();
             $table->foreignId('payment_mode_id')->after('merchant_id')->nullable()->constrained();
             $table->boolean('verified')->after('merchant_id')->default(false);
             $table->unique(['account_no','account_name','bank_name'], 'all_unique_constraint');
