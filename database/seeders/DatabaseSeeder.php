@@ -20,10 +20,10 @@ class DatabaseSeeder extends Seeder
         $this->call(CountryTableSeeder::class);
         $this->call(StatesTableSeeder::class);
         $this->call(MerchantCategoryTableSeeder::class);
-        // $this->call(StarterSeeder::class);
         $this->call(PaymentModeTableSeeder::class);
         // $this->call(CityTableSeeder::class);
-      //  $this->call(MerchantsTableSeeder::class);
+        $this->call(MerchantsTableSeeder::class);
+        $this->call(StarterSeeder::class);
         //$this->call(TransactionsTableSeeder::class);
         $this->call(PromoDaysTableSeeder::class);
         $this->call(PromoTimesTableSeeder::class);
